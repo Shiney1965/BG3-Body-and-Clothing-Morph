@@ -1,0 +1,36 @@
+{
+    "ModName": "Body and Clothing Morph",
+    "SchemaVersion": 1,
+    "Tabs": [
+        {
+            "TabId": "general",
+            "TabName": "General",
+            "Sections": [
+                {
+                    "SectionId": "body_replacement",
+                    "SectionName": "Body replacement",
+                    "SectionDescription": "Pick the body shape for your currently controlled character. Armor and clothing are refitted automatically; the choice is stored per character in your savegame.",
+                    "Settings": [
+                        {
+                            "Id": "body_choice",
+                            "Name": "Body shape",
+                            "Type": "radio",
+                            "Default": "Vanilla",
+                            "Options": {
+                                "Choices": ["Vanilla", "SBBF", "BCB"]
+                            },
+                            "Description": "Applies immediately to your currently controlled character when changed (same effect as the !cm_setbody console command). Switch characters and change it again to set other party members."
+                        },
+                        {
+                            "Id": "apply_on_load",
+                            "Name": "Re-apply on save load",
+                            "Type": "checkbox",
+                            "Default": false,
+                            "Description": "If enabled, the body shape above is re-applied to your controlled character every time a save finishes loading. Leave OFF to let each save keep its own per-character choices."
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
