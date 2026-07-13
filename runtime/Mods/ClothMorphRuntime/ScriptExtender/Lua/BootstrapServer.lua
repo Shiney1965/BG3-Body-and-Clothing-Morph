@@ -105,6 +105,26 @@ local function ResolveCommandChar(charArg)
 end
 
 local function ResolveNetTarget(data, user)
+    local requested = Targeting.NormGuid(data and (data.target or data.char or data.character))
+    local host = Targeting.NormGuid(GetHostChar())
+    -- v4.8 SP/loopback tolerance (2026-07-13): in single-player, SE's channel
+    -- handler can deliver a nil or non-Osiris-format sender id for the LOCAL
+    -- client. v4.7's strict validation therefore silently dropped EVERY
+    -- client-forwarded command -- including the MCM toggle (regression Alan hit).
+    -- Requests that target (or default to) the HOST character are accepted
+    -- without sender checks; that is inherently safe in single-player.
+    if host ~= nil and (requested == nil or requested == host) then
+        return host
+    end
+    -- Party-member tolerance (single-player companions). TODO-MULTIPLAYER:
+    -- replace with real per-user ownership validation once the userId<->
+    -- Osi.GetReservedUserID format mapping is calibrated from live MP logs.
+    if requested ~= nil and Osi ~= nil then
+        local okPM, isPM = pcall(function() return Osi.IsPartyMember(requested, 1) end)
+        if okPM and (isPM == 1 or isPM == true) then
+            return requested
+        end
+    end
     if user == nil then
         Warn(("Net channel: denied cmd='%s' target='%s' reason=missing-sender-user"):format(
             tostring(data and data.cmd),
@@ -115,11 +135,15 @@ local function ResolveNetTarget(data, user)
         getHostChar = GetHostChar,
     })
     if char == nil then
-        Warn(("Net channel: denied cmd='%s' target='%s' reason=%s%s"):format(
+        -- Extra diagnostics so a future MP session can calibrate the id formats.
+        local reserved = nil
+        pcall(function() reserved = Osi.GetReservedUserID(requested) end)
+        Warn(("Net channel: denied cmd='%s' target='%s' reason=%s%s [senderType=%s sender=%s reservedForTarget=%s]"):format(
             tostring(data and data.cmd),
             tostring(data and data.target),
             tostring(err),
-            why and ("/" .. tostring(why)) or ""))
+            why and ("/" .. tostring(why)) or "",
+            type(user), tostring(user), tostring(reserved)))
     end
     return char
 end
@@ -829,6 +853,6 @@ end)
 -- v4.7; guards still degrade to a logged no-op if MCM is missing/failed).
 McmGlue.InstallServer(MCM_DEPS)
 
-Log("BootstrapServer v4.7 loaded. Commands: !cm_setbody <vanilla|sbbf|bcb> | "
+Log("BootstrapServer v4.8 loaded. Commands: !cm_setbody <vanilla|sbbf|bcb> | "
     .. "!cm_setclothed <vanilla|sbbf> | !cm_seterace <guid> | !cm_erpass [force] | !cm_erstatus | !cm_refresh | "
     .. "!cm_applyccsv <ccsvGuid> | !cm_revert | !cm_status | !cm_checkbody | !cm_findoverride")

@@ -55,8 +55,12 @@ end
 local function ForwardForTarget(cmd, arg, explicitTarget)
     local target = ClientTarget(explicitTarget)
     if target == nil then
-        Warn(("!cm_%s: could not resolve your controlled character; pass a character GUID."):format(tostring(cmd)))
-        return
+        -- v4.8 (2026-07-13): don't ABORT when the controlled character can't be
+        -- resolved client-side (this silently killed the MCM toggle when the
+        -- ClientControl scan came up empty). Send with no target; the server
+        -- defaults a target-less request to the HOST character.
+        Log(("'%s': no client-side controlled character resolved; forwarding "
+            .. "without target (server will use the host character)."):format(tostring(cmd)))
     end
     Forward(cmd, arg, target)
 end
@@ -269,7 +273,7 @@ end)
 McmGlue.InstallClient({ Log = Log, Warn = Warn,
                         IsValid = Shared.IsValidBodyChoice, Forward = ForwardForTarget })
 
-Log("BootstrapClient v4.7 loaded. Commands (forward to server): "
+Log("BootstrapClient v4.8 loaded. Commands (forward to server): "
     .. "!cm_setbody !cm_setclothed !cm_seterace !cm_erpass !cm_erstatus !cm_refresh "
     .. "!cm_applyccsv !cm_revert !cm_status !cm_checkbody ; "
     .. "!cm_findoverride !cm_visdump (local client scans)")
