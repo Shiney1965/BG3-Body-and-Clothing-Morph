@@ -23,7 +23,7 @@ You can change the body shape three ways:
 - **Optional hotkeys** via MCM keybindings: a "cycle body" key plus direct-set keys for Vanilla / SBBF / BCB. All unbound by default (so they never clash out of the box) — you bind them yourself in MCM.
 - **Permission-flag system** that lets other clothing-mod authors opt their items in to being auto-refitted by this mod (see *For mod authors* below).
 - Incorporates clothing mods where permissions allow — SCO, BCB and others (with limitations).
-- Compatible with BCB and SBBF (with some limits — mod only works on a Tav, not an Origin character).
+- Compatible with BCB and SBBF (with some limits — see Coverage & Limitations for how Origin companions like Shadowheart are handled).
 
 ## Requirements
 
@@ -78,6 +78,7 @@ As of initial release:
 
 Known limitations:
 
+- **Character support:** Your Tav and hirelings (created characters) always get the full body and clothing switch. Among Origin companions, only those using the human/elf/half-elf/drow female body can be affected. In the standard party that means **Shadowheart** (confirmed working when no global body replacer is installed). **Minthara** is a likely candidate but is untested. **Lae'zel** (Githyanki) and **Karlach** (Tiefling) use body types this mod does not cover, so they are unaffected. For an eligible companion like Shadowheart: with no global body replacer the full body switch works; with **BCB** installed her body is baked to BCB, so the mod applies clothing/armor refit only and cannot change her body shape. SBBF is expected to behave the same as BCB in this respect, but is untested.
 - On the BCB body, some draped/slinky dresses conform only approximately (the refit is a reverse-deform, kept conservative to avoid flattening the dress's flare).
 - Some garments that bake their own body into the mesh (e.g. the "Full Metal Dress" / CorsetSkirtArm) intentionally render as their original BCB version and do not morph — this is by design, to avoid a worse artifact.
 - The "Shar Leggings + Oathbreaker Heels" outfit is excluded (the body morph does not apply to it in testing).
