@@ -38,6 +38,14 @@ You can change the body shape three ways:
 
 - [BCB by Sindae](https://www.nexusmods.com/baldursgate3/mods/2351) — NexusMods mod 2351.
 
+**For the BCB clothing add-on (`ClothMorphBCB`)** — required **only if you install that optional add-on**:
+
+- [BCB by Sindae](https://www.nexusmods.com/baldursgate3/mods/2351) — NexusMods mod 2351. Like the SCO add-on, `ClothMorphBCB` ships **only** the vanilla- and SBBF-fitted refit meshes; the BCB garments themselves, and their native BCB appearance, come from BCBPak. BCBPak must therefore be installed and enabled for the BCB add-on to have any effect — without it, `ClothMorphBCB` does nothing. (This is separate from the soft-requirement note above, which is about using the BCB *body* on NPCs.)
+
+**For the SCO add-on (`ClothMorphSCO`)** — required **only if you install that optional add-on**:
+
+- [Scantily Clad Camp Outfits (SCO)](https://www.nexusmods.com/baldursgate3/mods/2617), by Crosscrusade — NexusMods mod 2617. The SCO add-on ships **only** the SBBF- and BCB-fitted refit meshes for these outfits; the outfits themselves, and their Vanilla appearance, come from the SCO mod. SCO must therefore be installed and enabled for the SCO add-on to have any effect — without it, `ClothMorphSCO` does nothing. (The base Body and Clothing Morph mod does **not** need SCO; this requirement applies only to the optional SCO add-on.)
+
 ## Installation
 
 - Install the hard requirements above.
@@ -50,8 +58,8 @@ Internal component paks:
 
 - **ClothMorphRuntime** — the engine / Script Extender logic.
 - **ClothMorphContent** — the Vanilla/SBBF refit meshes (~405 garments).
-- **ClothMorphBCB** — the BCB clothing add-on.
-- **ClothMorphSCO** (optional) — Scantily Clad Camp Outfits add-on.
+- **ClothMorphBCB** — the BCB clothing add-on. Requires BCBPak by Sindae (NexusMods 2351) to be installed and enabled.
+- **ClothMorphSCO** (optional) — Scantily Clad Camp Outfits add-on. Requires the Scantily Clad Camp Outfits mod (NexusMods 2617) to be installed and enabled.
 
 ## How to use
 
