@@ -1,0 +1,98 @@
+[size=5][b]Body and Clothing Morph for SBBF and BCB[/b][/size]
+
+Pick a female body shape per character — Vanilla, SBBF, or BCB — and your armor or clothing refits to match.
+
+[url=https://github.com/Shiney1965/BG3-Body-and-Clothing-Morph]Source on GitHub[/url]
+
+[size=4][b]Overview[/b][/size]
+Body and Clothing Morph lets you choose a female body shape per character and applies it to the currently controlled character. The choice is stored per character in your savegame and persists across save/load. Your equipped clothing and armor is automatically refitted to the selected body.
+
+You can change the body shape three ways:
+[list]
+[*]The MCM (Mod Configuration Menu) UI
+[*]Console commands (e.g. [font=Courier New]!cm_setbody vanilla|sbbf|bcb[/font])
+[*]Optional hotkeys
+[/list]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]Per-character body shape[/b] — Vanilla / SBBF / BCB, applied to the controlled character and saved per character.
+[*][b]Automatic clothing/armor refit[/b] to the chosen body.
+[*][b]MCM configuration UI[/b] — a "Body shape" radio picker.
+[*][b]Console commands[/b] — [font=Courier New]!cm_setbody[/font], plus diagnostics.
+[*][b]Optional hotkeys[/b] via MCM keybindings: a "cycle body" key plus direct-set keys for Vanilla / SBBF / BCB. All unbound by default (so they never clash out of the box) — you bind them yourself in MCM.
+[*][b]Permission-flag system[/b] that lets other clothing-mod authors opt their items in to being auto-refitted by this mod (see [i]For mod authors[/i] below).
+[*]Incorporates clothing mods where permissions allow — SCO, BCB and others (with limitations).
+[*]Compatible with BCB and SBBF (with some limits — mod only works on a Tav, not an Origin character).
+[/list]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/baldursgate3/mods/9162]BG3 Mod Configuration Menu (MCM)[/url], by Volitio/AtilioA — NexusMods mod 9162, version 1.19 or newer (required for the hotkey/keybinding feature).
+[*]BG3 Script Extender (BG3SE), by Norbyte.
+[/list]
+
+[b]For the SBBF body option[/b] — soft requirement (compatible if you want SBBF on NPCs or special SBBF-only clothing):
+[list]
+[*][url=https://www.nexusmods.com/baldursgate3/mods/4864]SBBF — Stylized Beautiful Body for Female[/url], by FredKarrera — NexusMods mod 4864 (and its [url=https://www.nexusmods.com/baldursgate3/mods/5040]Vanilla Outfits Patch[/url], mod 5040).
+[/list]
+
+[b]For the BCB body and BCB clothing[/b] — soft requirement (compatible if you want BCB on NPCs or special BCB-only clothing):
+[list]
+[*][url=https://www.nexusmods.com/baldursgate3/mods/2351]BCB by Sindae[/url] — NexusMods mod 2351.
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Install the hard requirements above.
+[*]Install Body and Clothing Morph with your mod manager.
+[*]Load order: load Body and Clothing Morph (the ClothMorph paks) [b]ABOVE BCB[/b] in the load order.
+[/list]
+
+[spoiler=For the technically curious — load order]Internal component paks:
+[list]
+[*][b]ClothMorphRuntime[/b] — the engine / Script Extender logic.
+[*][b]ClothMorphContent[/b] — the Vanilla/SBBF refit meshes (~405 garments).
+[*][b]ClothMorphBCB[/b] — the BCB clothing add-on.
+[*][b]ClothMorphSCO[/b] (optional) — Scantily Clad Camp Outfits add-on.
+[/list][/spoiler]
+
+[size=4][b]How to use[/b][/size]
+[b]MCM:[/b] Open the Mod Configuration Menu and use the "Body shape" radio picker to choose Vanilla, SBBF, or BCB for the currently controlled character.
+
+[b]Hotkeys:[/b] In MCM keybindings, bind the "cycle body" key and/or the direct-set keys for Vanilla / SBBF / BCB. These are unbound by default — set them to whatever you like. (Requires MCM 1.19 or newer.)
+
+[b]Console:[/b] Use commands such as [font=Courier New]!cm_setbody vanilla[/font], [font=Courier New]!cm_setbody sbbf[/font], or [font=Courier New]!cm_setbody bcb[/font], plus the diagnostic commands.
+
+[size=4][b]Coverage & Limitations[/b][/size]
+As of initial release:
+[list]
+[*]Vanilla and SBBF bodies: broad vanilla clothing coverage with SCO optional add-on (the ClothMorphContent set, ~405 garments).
+[*]BCB body/clothing: in progress. Some BCB items are validated for use with non-BCB bodies via this mod. Some will only fit BCB bodies, or will apply the BCB body regardless of the mod setting.
+[/list]
+
+[b]Known limitations:[/b]
+[list]
+[*]On the BCB body, some draped/slinky dresses conform only approximately (the refit is a reverse-deform, kept conservative to avoid flattening the dress's flare).
+[*]Some garments that bake their own body into the mesh (e.g. the "Full Metal Dress" / CorsetSkirtArm) intentionally render as their original BCB version and do not morph — this is by design, to avoid a worse artifact.
+[*]The "Shar Leggings + Oathbreaker Heels" outfit is excluded (the body morph does not apply to it in testing).
+[*]Female human/elf/half-elf/drow bodies only (HUM_F). Other races and body types are not yet covered.
+[*]Multiplayer support is limited/experimental.
+[/list]
+
+[size=4][b]For mod authors[/b][/size]
+Other clothing-mod authors can opt their items in to automatic refitting by shipping a small marker file named [font=Courier New]ClothMorphPermission.json[/font] inside their pak (under [font=Courier New]Mods/<TheirModFolder>/[/font]). It records their explicit permission, the credit line they want shown, and which bodies/items are in scope.
+
+No third-party assets are adapted without the author's permission either posted or otherwise provided, and the author's credit line ships verbatim. The full spec is in the mod's docs.
+
+[size=4][b]Permissions[/b][/size]
+This mod is FREE and must always stay free; it is not for sale. Donation Points are fine.
+
+[size=4][b]Credits[/b][/size]
+[list]
+[*][b]Sindae — BCB[/b] (NexusMods mod 2351) — body and clothing assets, used with permission. Credit required, and gladly given: this mod's BCB support would not exist without Sindae's work.
+[*][b]FredKarrera — SBBF[/b] (Stylized Beautiful Body for Female, NexusMods mod 4864) and the Vanilla Outfits Patch (mod 5040).
+[*][b]Volitio / AtilioA — Mod Configuration Menu[/b] (NexusMods mod 9162).
+[*][b]Norbyte — BG3 Script Extender.[/b]
+[*][b]Crosscrusade — Scantily Clad Camp Outfits[/b] (NexusMods mod 2617) (if the SCO add-on is included).
+[/list]
