@@ -11,8 +11,8 @@ M.PROFILES = {
 }
 
 M.COVERAGE = {
-    bcb = 3,
-    sbbf = 3,
+    bcb = 8,
+    sbbf = 8,
     vanilla = 0,
 }
 
@@ -20,9 +20,19 @@ M.MAP = {
     ["bcb__0eb594cb-8820-4be6-a58d-8be7a1a98fba_10"] = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce",
     ["bcb__6c038dcb-7eb5-431d-84f8-cecfaf1c0c5a_10"] = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce",
     ["bcb__45f4ac10-3c89-4fb2-b37d-f973bb9110c0_10"] = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce",
+    ["bcb__4f5d1434-5175-4fa9-b7dc-ab24fba37929_10"] = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce",
+    ["bcb__c5f8ebdd-f4a5-4d2d-9eab-4a8d1b1dd724_10"] = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce",
+    ["bcb__4d30b4f9-7bb2-4fc2-a7bc-080f116e325a_10"] = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce",
+    ["bcb__e966f47f-998a-41df-ad86-d83b44299efb_10"] = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce",
+    ["bcb__bdf9b779-002c-4077-b377-8ea7c1faa795_10"] = "3d93f1a0-22bc-5938-951b-fe8b639be26b",
     ["sbbf__0eb594cb-8820-4be6-a58d-8be7a1a98fba_10"] = "a22009cd-b9e9-55b1-8295-f89a0ede1bf6",
     ["sbbf__6c038dcb-7eb5-431d-84f8-cecfaf1c0c5a_10"] = "a22009cd-b9e9-55b1-8295-f89a0ede1bf6",
     ["sbbf__45f4ac10-3c89-4fb2-b37d-f973bb9110c0_10"] = "a22009cd-b9e9-55b1-8295-f89a0ede1bf6",
+    ["sbbf__4f5d1434-5175-4fa9-b7dc-ab24fba37929_10"] = "a22009cd-b9e9-55b1-8295-f89a0ede1bf6",
+    ["sbbf__c5f8ebdd-f4a5-4d2d-9eab-4a8d1b1dd724_10"] = "a22009cd-b9e9-55b1-8295-f89a0ede1bf6",
+    ["sbbf__4d30b4f9-7bb2-4fc2-a7bc-080f116e325a_10"] = "a22009cd-b9e9-55b1-8295-f89a0ede1bf6",
+    ["sbbf__e966f47f-998a-41df-ad86-d83b44299efb_10"] = "a22009cd-b9e9-55b1-8295-f89a0ede1bf6",
+    ["sbbf__bdf9b779-002c-4077-b377-8ea7c1faa795_10"] = "a8819ee1-8c30-5d9c-87e5-d6c1d1589b96",
 }
 
 function M.BodyKey(race, bodyType, bodyShape)

@@ -29,6 +29,45 @@
                             "Description": "If enabled, the body shape above is re-applied to your controlled character every time a save finishes loading. Leave OFF to let each save keep its own per-character choices."
                         }
                     ]
+                },
+                {
+                    "SectionId": "hotkeys",
+                    "SectionName": "Hotkeys",
+                    "SectionDescription": "Optional hotkeys. They act on your currently controlled character, exactly like the Body shape picker above. All are UNBOUND by default - assign a key here if you want them.",
+                    "Settings": [
+                        {
+                            "Id": "key_cycle_body",
+                            "Name": "Cycle body (Vanilla > SBBF > BCB)",
+                            "Type": "keybinding_v2",
+                            "Default": { "Keyboard": { "Key": "NONE", "ModifierKeys": [] } },
+                            "Options": { "ShouldTriggerOnKeyDown": true, "ShouldTriggerOnKeyUp": false, "ShouldTriggerOnRepeat": false, "BlockIfLevelNotStarted": true },
+                            "Description": "Cycles the controlled character's body shape: Vanilla -> SBBF -> BCB -> Vanilla."
+                        },
+                        {
+                            "Id": "key_set_vanilla",
+                            "Name": "Set body: Vanilla",
+                            "Type": "keybinding_v2",
+                            "Default": { "Keyboard": { "Key": "NONE", "ModifierKeys": [] } },
+                            "Options": { "ShouldTriggerOnKeyDown": true, "ShouldTriggerOnKeyUp": false, "ShouldTriggerOnRepeat": false, "BlockIfLevelNotStarted": true },
+                            "Description": "Sets the controlled character's body to Vanilla."
+                        },
+                        {
+                            "Id": "key_set_sbbf",
+                            "Name": "Set body: SBBF",
+                            "Type": "keybinding_v2",
+                            "Default": { "Keyboard": { "Key": "NONE", "ModifierKeys": [] } },
+                            "Options": { "ShouldTriggerOnKeyDown": true, "ShouldTriggerOnKeyUp": false, "ShouldTriggerOnRepeat": false, "BlockIfLevelNotStarted": true },
+                            "Description": "Sets the controlled character's body to SBBF."
+                        },
+                        {
+                            "Id": "key_set_bcb",
+                            "Name": "Set body: BCB",
+                            "Type": "keybinding_v2",
+                            "Default": { "Keyboard": { "Key": "NONE", "ModifierKeys": [] } },
+                            "Options": { "ShouldTriggerOnKeyDown": true, "ShouldTriggerOnKeyUp": false, "ShouldTriggerOnRepeat": false, "BlockIfLevelNotStarted": true },
+                            "Description": "Sets the controlled character's body to BCB."
+                        }
+                    ]
                 }
             ]
         }

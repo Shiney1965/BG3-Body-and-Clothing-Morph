@@ -75,6 +75,13 @@ Ext.RegisterConsoleCommand("cm_setbody", function(_cmd, choice, charArg)
     ForwardForTarget("setbody", choice, charArg)
 end)
 
+-- !cm_cyclebody  -- cycle vanilla->sbbf->bcb on the controlled char (v4.13).
+-- Mirror of the server command so it works from either console context, and a
+-- keyless way to test the cycle hotkey.
+Ext.RegisterConsoleCommand("cm_cyclebody", function(_cmd, charArg)
+    ForwardForTarget("cyclebody", nil, charArg)
+end)
+
 -- !cm_applyccsv <ccsvGuid>  -- apply ANY CCSV by GUID (testing)
 Ext.RegisterConsoleCommand("cm_applyccsv", function(_cmd, ccsv, charArg)
     ForwardForTarget("applyccsv", ccsv, charArg)
@@ -273,7 +280,44 @@ end)
 McmGlue.InstallClient({ Log = Log, Warn = Warn,
                         IsValid = Shared.IsValidBodyChoice, Forward = ForwardForTarget })
 
-Log("BootstrapClient v4.8 loaded. Commands (forward to server): "
-    .. "!cm_setbody !cm_setclothed !cm_seterace !cm_erpass !cm_erstatus !cm_refresh "
+-- Server -> client feedback for hotkey/console body switches (v4.13). Keeps the
+-- MCM radio in sync and logs a line. Review M1: the server broadcasts, so in
+-- multiplayer EVERY client receives this; only touch our OWN MCM radio when the
+-- switched character is the one WE control (else clients clobber each other's
+-- saved body_choice). Review B1: MCM.Set(..., shouldEmitEvent=false) suppresses
+-- the MCM_Setting_Saved echo that would otherwise double-apply.
+local BODY_LABEL = { vanilla = "Vanilla", sbbf = "SBBF", bcb = "BCB" }
+pcall(function()
+    Channel:SetHandler(function(a, b)
+        local data = a
+        if type(data) ~= "table" or data.cmd == nil then data = b end
+        if type(data) ~= "table" or data.cmd ~= "cm_applied" then return end
+        local mine = Targeting.GetClientControlTarget()
+        -- Fail CLOSED (review fix): if we cannot resolve OUR controlled
+        -- character, do NOT sync the radio. Better a lagging radio (reopen MCM
+        -- to refresh) than clobbering another client's saved body_choice in MP.
+        if mine == nil or (data.char ~= nil
+           and Targeting.NormGuid(data.char) ~= Targeting.NormGuid(mine)) then
+            return
+        end
+        Log(("body applied: %s%s"):format(tostring(data.choice),
+            data.ok == false and " (not available for this character)" or ""))
+        local label = BODY_LABEL[tostring(data.choice or ""):lower()]
+        if label ~= nil and data.ok ~= false then
+            pcall(function() MCM.Set("body_choice", label, MOD.ModuleUUID, false) end)
+        end
+    end)
+end)
+
+-- Register the MCM hotkey callbacks. Review M2: do this in SessionLoaded (not at
+-- top-level load) so MCM's API global is guaranteed present. All bindings are
+-- unbound by default (see MCM_blueprint.json "hotkeys" section); the user binds
+-- them in the MCM UI.
+Ext.Events.SessionLoaded:Subscribe(function()
+    McmGlue.InstallKeybindings({ Log = Log, Warn = Warn, Forward = ForwardForTarget })
+end)
+
+Log("BootstrapClient v4.13 loaded. Commands (forward to server): "
+    .. "!cm_setbody !cm_cyclebody !cm_setclothed !cm_seterace !cm_erpass !cm_erstatus !cm_refresh "
     .. "!cm_applyccsv !cm_revert !cm_status !cm_checkbody ; "
-    .. "!cm_findoverride !cm_visdump (local client scans)")
+    .. "!cm_findoverride !cm_visdump (local client scans). Hotkeys: bind in MCM (unbound by default).")

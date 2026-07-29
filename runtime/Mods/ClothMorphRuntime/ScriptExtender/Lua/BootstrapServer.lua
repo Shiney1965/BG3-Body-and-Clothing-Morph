@@ -22,6 +22,13 @@
 --
 -- Gotchas obeyed: console cmds need "!"; no os.*/io.* (use Ext.*); Net via
 -- Ext.Net.CreateChannel; all risky calls pcall'd; ASCII only.
+--
+-- v4.15 (2026-07-24): BASE-BODY MECHANISM ("Outcome C", probe-verified live).
+-- Primary nude path is now a re-point of the character's CharacterVisual
+-- resource field VisualSet.BodySetVisual to the chosen body VisualResource
+-- (see the BASE-BODY section below). The CCSV overlay above remains as the
+-- automatic FALLBACK (mechanism flag / no CV / rejected write / unmapped VR)
+-- and for legacy saves until migrated.
 -- ===========================================================================
 
 local Shared    = Ext.Require("Shared.lua")
@@ -33,7 +40,7 @@ local McmGlue   = Ext.Require("MCMIntegration.lua")  -- BG3MCM bridge (hard depe
 local MOD = Mods.ClothMorphRuntime
 
 PersistentVars = PersistentVars or {}
-local SCHEMA_VERSION = 4  -- v4: added ClothedChoice/OrigEquipRace (EquipmentRace clothed half)
+local SCHEMA_VERSION = 5  -- v5 (v4.15): added OrigBodySetVisual/CvGuid (base-body mechanism)
 
 local function Log(msg)  Ext.Utils.Print("[ClothMorphRuntime:Server] " .. tostring(msg)) end
 local function Warn(msg) Ext.Utils.PrintWarning("[ClothMorphRuntime:Server] " .. tostring(msg)) end
@@ -58,7 +65,9 @@ end
 --     Bodies  = { [characterGuid] = { Choice="vanilla|sbbf|bcb", AppliedCcsv=<guid|nil>,
 --                                     DesiredCcsv=<guid|nil>,             -- v3 (nude half)
 --                                     ClothedChoice="vanilla|sbbf"|nil,   -- v4 (clothed half; nil = vanilla)
---                                     OrigEquipRace=<guid|nil> } },       -- v4 (recorded at first flip)
+--                                     OrigEquipRace=<guid|nil>,           -- v4 (recorded at first flip)
+--                                     OrigBodySetVisual=<guid|nil>,       -- v5 (pristine CV body VR)
+--                                     CvGuid=<guid|nil> } },              -- v5 (CV the orig belongs to)
 --   }
 -- The override itself ALSO lives in the savegame (CharacterCreationAppearance);
 -- PersistentVars just records WHICH CCSV is ours so we know what to strip.
@@ -243,6 +252,172 @@ local function ApplyCcsv(char, ccsv, choiceLabel)
     return true
 end
 
+-- ===========================================================================
+-- v4.15 BASE-BODY MECHANISM ("Outcome C"; probe-verified in-game 2026-07-24).
+-- Re-points the character's CharacterVisual resource field
+--     VisualSet.BodySetVisual
+-- at the chosen body VisualResource, so the BASE body itself becomes the
+-- chosen shape (single-body render; garments always sit over the body they
+-- were fitted to; revealing-garment bookkeeping becomes unnecessary).
+-- Probe facts baked in:
+--   * Ext.Resource.Get(cv, "CharacterVisual") is live in both Lua states and
+--     they share ONE resource object in single-player -> a server-side write
+--     is sufficient locally.
+--   * ONE-STEP nested writes only (r.VisualSet.BodySetVisual = g). NEVER
+--     assign r.VisualSet itself: the shallow copy wipes Slots and
+--     MaterialOverrides (headless character until relaunch).
+--   * Writes survive rebuilds AND save reloads within one game process and
+--     reset on relaunch -> re-apply once per process (idempotent), restore
+--     on cross-save loads (RestoreAllBaseWrites).
+--   * World model re-renders after the CCA touch+Replicate rebuild
+--     (ForceVisualRebuild; the probe's 'replicate' trigger). Paperdoll is
+--     immediate.
+-- MECHANISM: "C" = base-body primary with CCSV fallback; "CCSV" = wholesale
+-- v4.13 behavior (single-line rollback).
+-- ===========================================================================
+local MECHANISM = "C"
+
+-- Process-level record of CV edits. Resources reset per game process, so this
+-- must NOT live in PersistentVars: [cvGuid] = { orig=<vr>, cur=<vr>, char=g }.
+local BaseWrites = {}
+
+local function GetCharCV(char)
+    local cv
+    pcall(function()
+        local e = GetEntity(char)
+        cv = tostring(e.ServerCharacter.Template.CharacterVisualResourceID)
+    end)
+    if cv == "" or cv == "nil" then cv = nil end
+    return cv
+end
+
+local function GetCVRes(cv)
+    local r
+    pcall(function() r = Ext.Resource.Get(cv, "CharacterVisual") end)
+    return r
+end
+
+local function ReadBaseBody(cv)
+    local v
+    pcall(function()
+        local r = GetCVRes(cv)
+        if r ~= nil then v = tostring(r.VisualSet.BodySetVisual) end
+    end)
+    if v == "" or v == "nil" then v = nil end
+    return v
+end
+
+-- choice -> target body VisualResource, by unwrapping the SAME CCSV the
+-- registry already resolves (CCSV.VisualResource; the CheckBody read path).
+-- Returns vr, ccsv (both nil when unmapped).
+local function ResolveBodyVr(choice, race, bt, bs)
+    local ccsv = Shared.ResolveCcsv(choice, race, bt, bs)
+    if ccsv == nil then return nil, nil end
+    local vr
+    pcall(function()
+        local obj = Ext.StaticData.Get(ccsv, "CharacterCreationSharedVisual")
+        if obj ~= nil then vr = tostring(obj.VisualResource) end
+    end)
+    if vr == "" or vr == "nil" then vr = nil end
+    return vr, ccsv
+end
+
+-- Full visual rebuild: touch CCA.Visuals + Replicate (probe 'replicate').
+local function ForceVisualRebuild(char)
+    local ok = pcall(function()
+        local e = GetEntity(char)
+        local cca = e.CharacterCreationAppearance
+        local cur = {}
+        for _, g in ipairs(cca.Visuals or {}) do cur[#cur + 1] = tostring(g) end
+        cca.Visuals = cur
+        e:Replicate("CharacterCreationAppearance")
+    end)
+    if not ok then Warn("ForceVisualRebuild failed for " .. tostring(char)) end
+    return ok
+end
+
+-- Write the base-body VR into the char's CV (one-step) with readback verify.
+-- targetVr == nil restores the recorded original (vanilla choice).
+local function SetBaseBody(char, choice, targetVr)
+    if MECHANISM ~= "C" then return false, "mechanism-off" end
+    local cv = GetCharCV(char)
+    if cv == nil then return false, "no-cv" end
+    local cur = ReadBaseBody(cv)
+    if cur == nil then return false, "cv-unreadable" end
+    local pv = EnsurePV()
+    local rec = pv.Bodies[char] or {}; pv.Bodies[char] = rec
+    -- SF-3 (review 2026-07-24): if the char's CV changed since the original
+    -- was recorded (template swap / appearance mod), the stale orig belongs
+    -- to ANOTHER CV - drop it and re-record against the current CV.
+    if rec.CvGuid ~= nil and rec.CvGuid ~= cv then
+        Warn(("SetBaseBody: %s CV changed %s -> %s; re-recording original")
+            :format(tostring(char), tostring(rec.CvGuid), cv))
+        rec.OrigBodySetVisual, rec.CvGuid = nil, nil
+    end
+    local bw = BaseWrites[cv]
+    -- Record the pristine original ONCE per save record. Prefer the process
+    -- map's orig (cur may already be a same-process edit from another save).
+    if rec.OrigBodySetVisual == nil then
+        rec.OrigBodySetVisual = (bw and bw.orig) or cur
+        rec.CvGuid = cv
+    end
+    local orig = (bw and bw.orig) or rec.OrigBodySetVisual or cur
+    local target = targetVr
+    if target == nil then target = orig end
+    if cur == target then
+        BaseWrites[cv] = { orig = orig, cur = cur, char = char }
+        return true, "already"
+    end
+    if bw ~= nil and bw.char ~= nil and bw.char ~= char then
+        Warn(("SetBaseBody: CV %s is SHARED (%s vs %s) - last write wins")
+            :format(cv, tostring(bw.char), tostring(char)))
+    end
+    local okW = pcall(function()
+        local r = GetCVRes(cv)
+        r.VisualSet.BodySetVisual = target   -- ONE-STEP nested write ONLY
+    end)
+    local after = ReadBaseBody(cv)
+    if (not okW) or after ~= target then
+        Warn(("SetBaseBody: write REJECTED for %s (cv=%s want=%s got=%s)")
+            :format(tostring(char), cv, tostring(target), tostring(after)))
+        return false, "write-rejected"
+    end
+    BaseWrites[cv] = { orig = orig, cur = target, char = char }
+    ForceVisualRebuild(char)
+    Log(("SetBaseBody: %s cv=%s %s -> %s (choice=%s)")
+        :format(tostring(char), cv, tostring(cur), tostring(target), tostring(choice)))
+    return true, "written"
+end
+
+-- Cross-save hygiene: put every process-level CV edit back to its original.
+-- Runs at SavegameLoaded BEFORE the per-save re-apply, so a save that never
+-- managed a character cannot inherit another save's body edit.
+local function RestoreAllBaseWrites(reason)
+    local n = 0
+    for cv, bw in pairs(BaseWrites) do
+        if bw.cur ~= bw.orig then
+            local okW = pcall(function()
+                local r = GetCVRes(cv)
+                r.VisualSet.BodySetVisual = bw.orig
+            end)
+            if okW then
+                bw.cur = bw.orig; n = n + 1
+                -- SF-1: re-render the restored character NOW (no-op warn if
+                -- that char does not exist in the loaded save).
+                if bw.char ~= nil then pcall(function() ForceVisualRebuild(bw.char) end) end
+            end
+        end
+    end
+    if n > 0 then
+        Log(("RestoreAllBaseWrites(%s): restored %d CV(s)"):format(tostring(reason), n))
+    end
+end
+
+-- Re-apply the loaded save's recorded choices (idempotent; resources reset
+-- per process). Also migrates legacy v4.13 records off the CCSV overlay once
+-- the base write holds (the overlay CCSV persists in old saves' CCA).
+local ReapplyBaseBodies  -- forward decl; body assigned after StripOurOverride exists
+
 -- RevertChar(char): strip our override, record vanilla. No Osiris remove needed.
 -- v4.3: also reverts the CLOTHED half (EquipmentRace) so !cm_revert restores the
 -- WHOLE character (nude + armor). Was nude-only before; Alan expected a full
@@ -251,11 +426,12 @@ end
 local function RevertChar(char)
     if char == nil then return false end
     local pv = EnsurePV()
+    if MECHANISM == "C" then pcall(function() SetBaseBody(char, "vanilla", nil) end) end
     StripOurOverride(char)
     local rec = pv.Bodies[char] or {}
     rec.Choice, rec.AppliedCcsv, rec.DesiredCcsv = "vanilla", nil, nil
     pv.Bodies[char] = rec
-    pcall(function() EquipRace.SetClothed(char, "vanilla", rec) end)  -- clothed half too
+    pcall(function() EquipRace.SetClothed(char, "off", rec) end)  -- clothed half: restore ORIGINAL ER (2026-07-15: "off", not "vanilla" which is now a minted flip)
     Log("RevertChar: " .. tostring(char) .. " reverted to vanilla body + clothing")
     return true
 end
@@ -311,6 +487,79 @@ local function IsTorsoCovered(char)
     end
 end
 
+-- ---------------------------------------------------------------------------
+-- v4.11 (2026-07-20): REVEALING-GARMENT body coupling.
+-- The strip-on-cover rule (above) assumes every worn torso item OCCLUDES the
+-- body. True for normal armor/robes, but NOT for revealing vanity garments
+-- (BCB camp clothes with open chest / high slits, or garments carrying no body
+-- of their own): stripping the nude override there leaves the character's BASE
+-- (vanilla) body showing through an SBBF/BCB-cut outfit -> the "too big /
+-- doesn't match / clipping" mismatch (diagnosed in-game 2026-07-20 via
+-- cm_visdump: Rich Dress = SBBF-cut dress over the vanilla base body; Full
+-- Metal Dress = its own baked SBBF body PLUS the vanilla base = double-body).
+-- Fix: for garments KNOWN to be revealing, KEEP the selected body applied so it
+-- matches the outfit. SAFE BY DEFAULT: anything NOT listed here still occludes
+-- (strip), so all ordinary armor is unchanged.
+-- Keyed by the item's carried template id OR its parent template id OR its
+-- Human-Female source VisualResource id (match on ANY marks it revealing).
+-- Seeded with the two in-game-VERIFIED pilot torso garments; extend as more
+-- BCB vanity garments are confirmed.
+-- ---------------------------------------------------------------------------
+local REVEALING_TORSO = {
+    -- Rich Dress - Short: carried template + Human-F source VR
+    ["19bf6831-84ff-42d1-aa18-a97dc3f96a6a"] = true,
+    ["81c7c8bb-32e0-4549-9066-f61c6affc78b"] = true,
+    ["9396ed3b-74e9-4977-9dfb-412fb7d7bbea"] = true,   -- Mizora DressLong (revealing) 2026-07-20
+    ["9296ed3b-74e9-4977-9dfb-412fb7d7bbea"] = true,   -- Mizora Dress (short) revealing
+    -- v4.12 (2026-07-20): Full Metal Dress (CorsetSkirtArm, 20bf6831 / 44c0132d)
+    -- REMOVED from the revealing set. It bakes its OWN body (see EquipRace
+    -- M.BAKED_EXCLUDE), so it is left untouched: it now OCCLUDES here (nude
+    -- override stripped under it) and its flip is verbatim (raw Sindae mesh),
+    -- i.e. it renders exactly as the original BCB mod. Add future baked-body
+    -- garments to M.BAKED_EXCLUDE, NOT here.
+}
+
+-- Human-Female source race (same GUID the blanket pass copies from; used to
+-- read an item's source visual array). See EquipRace SOURCE_RACE.
+local HUMAN_F_RACE = "71180b76-5752-4a97-b71f-911a69197f58"
+
+-- Read an equipped item's template id, parent template id, and its Human-F
+-- source VisualResource ids; return true if ANY is tagged REVEALING_TORSO.
+-- Fully pcall-guarded and read-only; unknown/absent fields -> false (occludes).
+local function ItemIsRevealing(itemGuid)
+    if itemGuid == nil or itemGuid == "" then return false end
+    local hit = false
+    pcall(function()
+        local e = Ext.Entity.Get(itemGuid)
+        local t = e ~= nil and e.ServerItem ~= nil and e.ServerItem.Template or nil
+        if t == nil then return end
+        local tid = tostring(t.Id or ""):lower()
+        if REVEALING_TORSO[tid] then hit = true; return end
+        local pid = tostring(t.ParentTemplateId or ""):lower()
+        if pid ~= "" and REVEALING_TORSO[pid] then hit = true; return end
+        if t.Equipment ~= nil and t.Equipment.Visuals ~= nil then
+            local arr = t.Equipment.Visuals[HUMAN_F_RACE]
+            if arr ~= nil then
+                for _, v in ipairs(arr) do
+                    if REVEALING_TORSO[tostring(v):lower()] then hit = true; return end
+                end
+            end
+        end
+    end)
+    return hit
+end
+
+-- Does the currently-rendered torso garment OCCLUDE the body (=> strip is
+-- correct)? Default TRUE (safe: strip) unless the ACTIVE-set torso item is a
+-- known revealing garment. Only consulted when IsTorsoCovered(char) is true.
+local function TorsoOccludesBody(char)
+    local slot = (CurrentArmourSet(char) == "Vanity") and "VanityBody" or "Breast"
+    local it
+    pcall(function() it = Osi.GetEquippedItem(char, slot) end)
+    if it == nil or it == "" then return true end
+    return not ItemIsRevealing(it)
+end
+
 -- Idempotent: brings the override in line with desire + torso coverage.
 local function Reconcile(char, reason)
     local pv = EnsurePV()
@@ -324,17 +573,59 @@ local function Reconcile(char, reason)
         end
         return
     end
-    if IsTorsoCovered(char) then
+    -- v4.11: hide the body ONLY when the torso is covered by an OCCLUDING
+    -- garment. A revealing vanity garment keeps the selected body so it matches
+    -- the outfit's cut (see REVEALING_TORSO above). Ordinary armor is unchanged.
+    if IsTorsoCovered(char) and TorsoOccludesBody(char) then
         if rec.AppliedCcsv then
             StripOurOverride(char); rec.AppliedCcsv = nil
-            Log(("Reconcile(%s): torso covered -> stripped nude body"):format(tostring(reason)))
+            Log(("Reconcile(%s): torso covered by occluding armor -> stripped nude body"):format(tostring(reason)))
         end
     else
         if rec.AppliedCcsv ~= desired then
             ApplyCcsv(char, desired, rec.Choice or "custom")
-            Log(("Reconcile(%s): torso bare -> applied %s"):format(tostring(reason), tostring(desired)))
+            Log(("Reconcile(%s): torso bare or revealing garment -> applied %s"):format(tostring(reason), tostring(desired)))
         end
     end
+end
+
+-- v4.15: body of the forward-declared re-apply walk (needs StripOurOverride).
+ReapplyBaseBodies = function(reason)
+    if MECHANISM ~= "C" then return end
+    local pv = EnsurePV()
+    local n = 0
+    for char, rec in pairs(pv.Bodies or {}) do
+        local choice = rec.Choice
+        if choice == "sbbf" or choice == "bcb" then
+            local entity = GetEntity(char)
+            if entity == nil then
+                Log(("ReapplyBaseBodies: %s not instantiated yet (choice=%s) - will retry at the other load event")
+                    :format(tostring(char), tostring(choice)))
+            end
+            if entity ~= nil then
+                local race, bt, bs
+                pcall(function() race, bt, bs = Shared.ReadCharStats(entity) end)
+                local vr = ResolveBodyVr(choice, race, bt, bs)
+                if vr == nil then
+                    Warn(("ReapplyBaseBodies: %s choice=%s has no resolvable body VR (race=%s) - base body left vanilla")
+                        :format(tostring(char), tostring(choice), tostring(race)))
+                end
+                if vr ~= nil then
+                    local ok = SetBaseBody(char, choice, vr)
+                    if ok then
+                        n = n + 1
+                        if rec.DesiredCcsv ~= nil or rec.AppliedCcsv ~= nil then
+                            StripOurOverride(char)
+                            rec.DesiredCcsv, rec.AppliedCcsv = nil, nil
+                            Log(("ReapplyBaseBodies: migrated %s off the legacy CCSV overlay")
+                                :format(tostring(char)))
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if n > 0 then Log(("ReapplyBaseBodies(%s): %d character(s)"):format(tostring(reason), n)) end
 end
 
 -- SetDesiredBody(char, choice): record the player's pick (what to show when
@@ -349,6 +640,8 @@ local function SetDesiredBody(char, choice)
     if choice == "vanilla" then
         pv.Bodies[char].Choice = "vanilla"
         pv.Bodies[char].DesiredCcsv = nil
+        -- v4.15: restore the pristine base body first (no-op if never written).
+        if MECHANISM == "C" then pcall(function() SetBaseBody(char, "vanilla", nil) end) end
         Reconcile(char, "setbody-vanilla")
         pcall(function() EquipRace.SetClothed(char, "vanilla", pv.Bodies[char]) end)
         return true
@@ -361,16 +654,35 @@ local function SetDesiredBody(char, choice)
     local entity = GetEntity(char)
     local race, bt, bs
     pcall(function() race, bt, bs = Shared.ReadCharStats(entity) end)
-    local ccsv, mapKey = Shared.ResolveCcsv(choice, race, bt, bs)
-    if ccsv == nil then
-        Warn(("SetDesiredBody: no CCSV mapped for key '%s' (race=%s bt=%s bs=%s) - "
-            .. "nude half SKIPPED; attempting clothed half."):format(
-            tostring(mapKey), tostring(race), tostring(bt), tostring(bs)))
-    else
-        rec.Choice = choice
-        rec.DesiredCcsv = ccsv
-        Reconcile(char, "setbody")
-        okNude = true
+    local vr, ccsv = ResolveBodyVr(choice, race, bt, bs)
+    local mapKey
+    if ccsv == nil then ccsv, mapKey = Shared.ResolveCcsv(choice, race, bt, bs) end
+    -- v4.15 PRIMARY: re-point the base body (Outcome C). On success the CCSV
+    -- overlay is retired for this character (single-body render).
+    if MECHANISM == "C" and vr ~= nil then
+        local okBase = SetBaseBody(char, choice, vr)
+        if okBase then
+            rec.Choice = choice
+            if rec.AppliedCcsv ~= nil or rec.DesiredCcsv ~= nil then
+                StripOurOverride(char)
+                rec.AppliedCcsv, rec.DesiredCcsv = nil, nil
+            end
+            okNude = true
+        end
+    end
+    -- FALLBACK (mechanism off / no CV / write rejected / unmapped): the proven
+    -- v4.13 CCSV overlay path, unchanged.
+    if not okNude then
+        if ccsv == nil then
+            Warn(("SetDesiredBody: no CCSV mapped for key '%s' (race=%s bt=%s bs=%s) - "
+                .. "nude half SKIPPED; attempting clothed half."):format(
+                tostring(mapKey), tostring(race), tostring(bt), tostring(bs)))
+        else
+            rec.Choice = choice
+            rec.DesiredCcsv = ccsv
+            Reconcile(char, "setbody")
+            okNude = true
+        end
     end
     -- Clothed half: flip EquipmentRace if this choice has minted clothed assets
     -- (sbbf only in v1).
@@ -391,6 +703,10 @@ end
 -- own bodies, the ClothMorphContent VisualBank pak loaded so the CCSV resolves).
 -- ---------------------------------------------------------------------------
 local function ApplyBody(char, choice)
+    -- DEBUG-only nude-CCSV helper (exposed as MOD.ApplyBody); NOT wired to any
+    -- command/MCM/net path. Its "vanilla"=full-revert semantic is intentional here
+    -- and is DISTINCT from the mainline body pick (SetDesiredBody -> minted-vanilla
+    -- flip that overrides BCB, 2026-07-15). Do not re-wire user paths to this.
     if char == nil then Warn("ApplyBody: no character"); return false end
     if choice == "vanilla" then return RevertChar(char) end
 
@@ -427,6 +743,14 @@ local function DumpStatus(char)
     Log("  OurCcsv   : " .. tostring(rec.AppliedCcsv or "(none)"))
     Log("  Desired   : " .. tostring(rec.DesiredCcsv or "(vanilla)"))
     Log("  Clothed   : " .. tostring(rec.ClothedChoice or "vanilla"))
+    if MECHANISM == "C" then
+        local cv = GetCharCV(char)
+        Log("  BaseCV    : " .. tostring(cv or "(none)"))
+        if cv ~= nil then
+            Log("  BaseBody  : " .. tostring(ReadBaseBody(cv) or "?")
+                .. "  (orig " .. tostring(rec.OrigBodySetVisual or "unrecorded") .. ")")
+        end
+    end
     Log("  Visuals (" .. tostring(#vis) .. "):")
     for i, g in ipairs(vis) do Log("    " .. i .. "  " .. tostring(g)) end
     Log("-------------------")
@@ -482,6 +806,24 @@ local function Cmd_SetBody(_cmd, choice, charArg)
     end
     local char = ResolveCommandChar(charArg); if not char then Warn("no character target"); return end
     SetDesiredBody(char, choice); DumpStatus(char)
+end
+
+-- Server->client "applied" feedback (v4.13). Forward-declared here; ASSIGNED
+-- after the net Channel is created (it needs Channel:Broadcast). Called by the
+-- hotkey/net paths to sync the MCM radio on the controlling client.
+local NotifyApplied
+
+-- !cm_cyclebody [charGuid]  -- cycle vanilla->sbbf->bcb on the target (v4.13).
+-- Lean path (no verbose DumpStatus, review m1); the client prints one cm_applied
+-- line. Reads the current choice from the PV record (rec.Choice).
+local function Cmd_CycleBody(_cmd, charArg)
+    local char = ResolveCommandChar(charArg); if not char then Warn("no character target"); return end
+    local pv = EnsurePV()
+    local cur = (pv.Bodies[char] or {}).Choice or "vanilla"
+    local nxt = Shared.NextBodyChoice(cur)
+    Log(("CycleBody: %s '%s' -> '%s'"):format(tostring(char), tostring(cur), tostring(nxt)))
+    local ok = SetDesiredBody(char, nxt)
+    if NotifyApplied then NotifyApplied(char, nxt, ok ~= false) end
 end
 
 -- !cm_applyccsv <ccsvGuid>  -- apply ANY CCSV by GUID (testing w/ vanilla CCSVs)
@@ -605,7 +947,7 @@ local function ExpectedEquipRace(char, choice)
     choice = choice and tostring(choice):lower() or nil
     if choice == nil or choice == "" then return nil end
     if EquipRace.MINTED[choice] ~= nil then return EquipRace.MINTED[choice] end
-    if choice == "vanilla" then
+    if choice == "off" then  -- 2026-07-15: "off" = restore-original expectation; "vanilla" is now minted (handled above)
         local rec = EnsurePV().Bodies[char] or {}
         return rec.OrigEquipRace
     end
@@ -665,8 +1007,27 @@ local function Cmd_SharedApply(_cmd, charA, choiceA, charB, choiceB)
     RunSharedProbe(charA, choiceA, charB, choiceB)
 end
 
+-- !cm_bcbpak          -> report detected state
+-- !cm_bcbpak on|off   -> force the gate and re-run the vanilla pass
+-- !cm_bcbpak auto     -> clear the override and re-probe the load order
+-- NOTE: SERVER console only (no client mirror / net-channel arm yet). The
+-- canonical Session-2 test is still "disable BCBPak in BG3MM and restart" --
+-- this command is a convenience for spot-checks, NOT a substitute for it.
+local function Cmd_BcbPak(_, arg)
+    local a = arg and tostring(arg):lower() or nil
+    if     a == "on"  or a == "1" or a == "true"  then EquipRace.SetBCBPakPresent(true)
+    elseif a == "off" or a == "0" or a == "false" then EquipRace.SetBCBPakPresent(false)
+    elseif a == "auto" or a == "nil"              then EquipRace.SetBCBPakPresent(nil)
+    end
+    local present = EquipRace.HasBCBPak()
+    Log(("BCBPak present = %s  (base vanilla-VR remap %s; sbbf/bcb + external refits always on)")
+        :format(tostring(present), present and "ENABLED" or "DISABLED"))
+end
+
+Ext.RegisterConsoleCommand("cm_bcbpak",       Cmd_BcbPak)
 Ext.RegisterConsoleCommand("cm_optout",       Cmd_Optout)
 Ext.RegisterConsoleCommand("cm_setbody",      Cmd_SetBody)
+Ext.RegisterConsoleCommand("cm_cyclebody",    Cmd_CycleBody)
 Ext.RegisterConsoleCommand("cm_applyccsv",    Cmd_ApplyCcsv)
 Ext.RegisterConsoleCommand("cm_revert",       Cmd_Revert)
 Ext.RegisterConsoleCommand("cm_status",       Cmd_Status)
@@ -706,7 +1067,9 @@ local function DispatchNetCmd(a, b, c)
         if char == nil then return end
     end
     if     cmd == "setbody"   then Cmd_SetBody("cm_setbody", data.arg, char)
-    elseif cmd == "mcm_setbody" then  -- MCM change forwarded from the client leg (deduped vs the server-side event)
+                                   if NotifyApplied then NotifyApplied(char, data.arg, true) end
+    elseif cmd == "cyclebody" then Cmd_CycleBody("cm_cyclebody", char)
+    elseif cmd == "mcm_setbody" then  -- MCM change forwarded from the client leg (deduped vs the server-side event); never NotifyApplied here (review m1: echo loop)
         McmGlue.NetApply({ Log = Log, Warn = Warn, IsValid = Shared.IsValidBodyChoice,
                            SetDesiredBody = SetDesiredBody }, data.arg, char)
     elseif cmd == "applyccsv" then Cmd_ApplyCcsv("cm_applyccsv", data.arg, char)
@@ -729,6 +1092,22 @@ pcall(function()
     Channel:SetRequestHandler(function(a, b, c) DispatchNetCmd(a, b, c); return { ok = true } end)
 end)
 
+-- Assign the forward-declared NotifyApplied now that Channel exists (v4.13).
+-- Broadcast (not SendToUser): the SP loopback makes per-user sends unreliable
+-- here, so we broadcast and let the CLIENT filter to its own controlled char
+-- (review M1). pcall-guarded: if Broadcast is unavailable the body switch still
+-- works, only the MCM radio sync/console feedback is skipped.
+NotifyApplied = function(char, choice, ok)
+    -- Arm the B1 dedupe belt: mark this value applied so that IF an MCM radio
+    -- echo (mcm_setbody) still reaches NetApply, it dedupes instead of
+    -- double-applying. (Primary B1 defense is client-side MCM.Set(...,false).)
+    pcall(function() McmGlue.NoteApplied(choice) end)
+    pcall(function()
+        Channel:Broadcast({ cmd = "cm_applied", char = tostring(char),
+                            choice = tostring(choice), ok = ok ~= false })
+    end)
+end
+
 -- Expose for debugging.
 MOD.ApplyBody = ApplyBody
 MOD.ApplyCcsv = ApplyCcsv
@@ -737,6 +1116,9 @@ MOD.DumpStatus = DumpStatus
 MOD.StripOurOverride = StripOurOverride
 MOD.Reconcile = Reconcile
 MOD.SetDesiredBody = SetDesiredBody
+MOD.SetBaseBody = SetBaseBody
+MOD.ReapplyBaseBodies = function(r) ReapplyBaseBodies(r or "manual") end
+MOD.RestoreAllBaseWrites = RestoreAllBaseWrites
 
 -- ===========================================================================
 -- EQUIP / UNEQUIP AUTO-TOGGLE
@@ -796,6 +1178,13 @@ end)
 -- ===========================================================================
 Ext.Events.SessionLoaded:Subscribe(function()
     EnsurePV()
+    -- BCBPak presence probe (2026-07-26, Alan's rule). Resolved ONCE here inside
+    -- the existing handler -- no new subscription, no per-tick cost. Must run
+    -- BEFORE RunBlanketPass below, which consults it for the `vanilla` choice.
+    -- Gates ONLY the BASE vanilla-VR remap: sbbf/bcb are base Content, and
+    -- externally merged vanilla entries (ClothMorphSCO's, which defend against
+    -- BCBScantily) are deliberately exempt. Rationale: EquipRace.lua header.
+    pcall(function() EquipRace.HasBCBPak() end)
     -- Seed the remap opt-out set from the save (persisted by !cm_optout).
     local nOpt = 0
     for tid, v in pairs(PersistentVars.OptoutTemplates or {}) do
@@ -806,14 +1195,14 @@ Ext.Events.SessionLoaded:Subscribe(function()
     local choices = {}
     for _, rec in pairs(PersistentVars.Bodies or {}) do
         n = n + 1
-        if rec.ClothedChoice ~= nil and rec.ClothedChoice ~= "vanilla" then
+        if rec.ClothedChoice ~= nil and EquipRace.MINTED[rec.ClothedChoice] ~= nil then  -- 2026-07-15: gate on MINTED (incl. vanilla), not ~="vanilla"
             nClothed = nClothed + 1
             choices[rec.ClothedChoice] = true
         end
         -- C2 companion (2026-07-06): a character flagged NeedsRecovery (or with a
         -- recorded orig) may still carry a persisted minted ER even though its
         -- ClothedChoice reads vanilla - keep the pass alive so gear stays visible.
-        if rec.NeedsRecovery and rec.ClothedChoice ~= nil and rec.ClothedChoice ~= "vanilla" then
+        if rec.NeedsRecovery and rec.ClothedChoice ~= nil and EquipRace.MINTED[rec.ClothedChoice] ~= nil then  -- 2026-07-15: gate on MINTED
             choices[rec.ClothedChoice] = true
         elseif rec.NeedsRecovery then
             choices["sbbf"] = true  -- unknown choice: sbbf pass is the safe default
@@ -837,12 +1226,33 @@ local MCM_DEPS = { Log = Log, Warn = Warn, IsValid = Shared.IsValidBodyChoice,
 pcall(function()
     Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(_level, _isEditor)
         local pv = EnsurePV()
+        -- v4.15 SF-2: restore-then-reapply here too - a NEW GAME in the same
+        -- process fires LevelGameplayStarted without SavegameLoaded, and must
+        -- not inherit another save's CV edits (origin CVs are shared pak
+        -- resources). Idempotent churn on act transitions is acceptable.
+        pcall(function() RestoreAllBaseWrites("LevelGameplayStarted") end)
+        pcall(function() ReapplyBaseBodies("LevelGameplayStarted") end)
+        -- v4.10: flush any queued external (add-on) refit entries BEFORE reapply.
+        pcall(function() EquipRace.RetryPendingExternalRefits() end)
+        -- v4.13 F1: verify the ClothMorphContent VisualBank is actually present.
+        -- If absent, base-map refits would resolve to nothing (invisible gear);
+        -- CheckContentPresence flips a safe pass-through flag + forces a re-pass
+        -- so gear renders vanilla-shaped (visible) instead, and warns loudly.
+        pcall(function() EquipRace.CheckContentPresence() end)
+        -- v4.13 provenance: warn if a registered add-on's source mod is absent or
+        -- has drifted since its refits were generated (log-only; never blocks).
+        pcall(function() EquipRace.CheckExternalSources() end)
         pcall(function() EquipRace.ReapplyAll(pv.Bodies, "LevelGameplayStarted") end)
         -- no-op unless MCM present and apply_on_load enabled:
         McmGlue.ApplyOnLoad(MCM_DEPS)
     end)
     Ext.Osiris.RegisterListener("SavegameLoaded", 0, "after", function()
         local pv = EnsurePV()
+        -- v4.15: cross-save hygiene THEN re-apply this save's choices.
+        pcall(function() RestoreAllBaseWrites("SavegameLoaded") end)
+        pcall(function() ReapplyBaseBodies("SavegameLoaded") end)
+        -- v4.10: flush queued external (add-on) refit entries here too (S1).
+        pcall(function() EquipRace.RetryPendingExternalRefits() end)
         pcall(function() EquipRace.ReapplyAll(pv.Bodies, "SavegameLoaded") end)
         McmGlue.ApplyOnLoad(MCM_DEPS)
     end)
@@ -853,6 +1263,33 @@ end)
 -- v4.7; guards still degrade to a logged no-op if MCM is missing/failed).
 McmGlue.InstallServer(MCM_DEPS)
 
-Log("BootstrapServer v4.8 loaded. Commands: !cm_setbody <vanilla|sbbf|bcb> | "
+-- v4.10: external refit registration hook for optional content paks (first
+-- consumer: ClothMorphSCO). Exposed as a ModTable global so an add-on's SE
+-- module can call Mods.ClothMorphRuntime.RegisterExternalRefits(name, maps).
+RegisterExternalRefits = function(sourceName, maps, info)
+    return EquipRace.RegisterExternalRefits(sourceName, maps, info)
+end
+
+-- 2026-07-22: external revealing-garment registration. An add-on whose garments
+-- are revealing (open chest / sheer / high-cut, so the body shows through) calls
+-- Mods.ClothMorphRuntime.RegisterExternalRevealing({ ids }) to KEEP the selected
+-- body under them instead of stripping it (otherwise a body-cut garment sits over
+-- the vanilla base body -> mismatch). ids may be a carried template id, parent
+-- template id, OR a Human-F source VisualResource id -- the same keys
+-- ItemIsRevealing() matches on. Additive; safe to call at SessionLoaded.
+RegisterExternalRevealing = function(ids)
+    if type(ids) ~= "table" then
+        Warn("RegisterExternalRevealing: ids is not a table"); return false
+    end
+    local n = 0
+    for _, id in ipairs(ids) do
+        local k = tostring(id):lower()
+        if k ~= "" and REVEALING_TORSO[k] == nil then REVEALING_TORSO[k] = true; n = n + 1 end
+    end
+    Log(("RegisterExternalRevealing: added %d revealing id(s)."):format(n))
+    return n > 0
+end
+
+Log("BootstrapServer v4.18 loaded (BASE-BODY mechanism [Outcome C] primary + CCSV fallback + conditional-strip + baked-body exclusion + MCM hotkeys + external-source provenance + content-presence guard + BCBPak presence gate + class-1 vanilla clones [74; Moonshadow fix: 84195a60/54bc906f/238f0743 reverted to passthrough] + Moonshadow SBBF opt-out removed -> Body/Pants remap to SBBF clones). Commands: !cm_setbody <vanilla|sbbf|bcb> | !cm_cyclebody |"
     .. "!cm_setclothed <vanilla|sbbf> | !cm_seterace <guid> | !cm_erpass [force] | !cm_erstatus | !cm_refresh | "
-    .. "!cm_applyccsv <ccsvGuid> | !cm_revert | !cm_status | !cm_checkbody | !cm_findoverride")
+    .. "!cm_applyccsv <ccsvGuid> | !cm_revert | !cm_status | !cm_checkbody | !cm_findoverride. Hotkeys: bind in MCM (unbound by default).")

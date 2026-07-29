@@ -25,6 +25,24 @@ function M.IsValidBodyChoice(choice)
 end
 
 -- ---------------------------------------------------------------------------
+-- Cycle order for the "cycle body" hotkey (v4.13). Vanilla -> SBBF -> BCB ->
+-- Vanilla. NextBodyChoice returns the next choice after `cur`; any unknown/nil
+-- value (e.g. a "custom" CCSV applied via !cm_applyccsv) lands on the first
+-- entry ("vanilla"), which is intuitive and documented.
+-- ---------------------------------------------------------------------------
+M.CYCLE_ORDER = { "vanilla", "sbbf", "bcb" }
+
+function M.NextBodyChoice(cur)
+    local c = tostring(cur or "vanilla"):lower()
+    for i, name in ipairs(M.CYCLE_ORDER) do
+        if name == c then
+            return M.CYCLE_ORDER[(i % #M.CYCLE_ORDER) + 1]
+        end
+    end
+    return M.CYCLE_ORDER[1]
+end
+
+-- ---------------------------------------------------------------------------
 -- Body coverage registry.
 --
 -- The CCSV lookup is generated from tools/body_registry_manifest.json into

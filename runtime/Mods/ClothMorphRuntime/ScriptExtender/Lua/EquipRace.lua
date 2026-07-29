@@ -38,6 +38,7 @@ local function Warn(msg) Ext.Utils.PrintWarning("[ClothMorphRuntime:EquipRace] "
 M.MINTED = {
     sbbf = "c7a11e5e-0001-4b0d-9e57-5bbf00000001",
     bcb = "c7a11e5e-0002-4b0d-9e57-5bbf00000002",  -- BCB (Beautiful Curvy Body); refit set added 2026-07-05
+    vanilla = "c7a11e5e-0003-4b0d-9e57-5bbf00000003", -- clean-vanilla override (defeats BCB's in-place VR override); added 2026-07-15
 }
 
 -- Human Female is the source race whose visual arrays the blanket pass copies.
@@ -62,8 +63,10 @@ M.SOURCE_RACE = "71180b76-5752-4a97-b71f-911a69197f58"  -- Human Female (BT1)
 --     Alan's current save and MUST be removed / generalized before any release.
 -- ---------------------------------------------------------------------------
 M.KNOWN_ORIG = {
-    ["3ed74f06-3c60-42dc-83f6-f034cb47c679"] = "76217761-eeac-47bb-b273-fab583ee3b57", -- Shadowheart (P2 observed)
-    ["c2a5ae28-d256-7d96-4009-310c615821e6"] = "ad21d837-2db5-4e46-8393-7d875dd71287", -- Alan's Tav (Elf/Drow F); SAVE-SPECIFIC, dev-recovery only
+    ["3ed74f06-3c60-42dc-83f6-f034cb47c679"] = "76217761-eeac-47bb-b273-fab583ee3b57", -- Shadowheart (P2 observed; origin GUID stable across playthroughs)
+    -- NOTE (release hygiene, 2026-07-21): a save-specific dev Tav row was removed
+    -- here for public release (per-playthrough character GUIDs never generalize;
+    -- use !cm_seterace / M.ForceSetEquipRace for per-save manual recovery instead).
 }
 
 -- EquipmentRace DefaultParent chain (SharedDev EquipmentRaces.lsx, Patch 8,
@@ -103,6 +106,506 @@ local PARENT = {
 -- skirt + chainshirt(DAE-fallback path).
 -- ---------------------------------------------------------------------------
 M.REFIT_BY_VR = {
+    vanilla = {  -- clean-vanilla clones (new GUIDs; SourceFile=vanilla GR2) -> override BCB in-place VR redefinition. gen 2026-07-15, 405 items.
+        ["089ee9e1-e764-38dd-c742-fd905f976f13"] = "c58443a9-a6b4-5f88-bc95-06914046c9e2",  -- HUM_F_ARM_BarbarianMagical_A_Chest (synthesized node; VR lives in [PAK]_Male_Armor)
+        ["d7196f12-bfcb-84d7-b96d-088284ef2a7f"] = "6040b4e6-45e0-5457-86e9-7d527447da62",  -- HUM_F_ARM_Scalemail_Paladin_OathOfCrown_Body (synthesized node)
+        ["02964f77-c398-423b-a5e9-f7810243811c"] = "472210b6-5947-5c56-830d-994f9ff5adb2",  -- HUM_F_ARM_Adventurer_Body_A
+        ["ed8e5366-bfa5-91c4-9eae-9ef39f402214"] = "86c5fdca-be6c-5103-8a22-58775d8a4497",  -- HUM_F_ARM_Astarion_Body
+        ["7187c0c1-3752-5d43-9858-7b72fdb0fa3c"] = "11cdd5f3-39d4-5711-ac74-d920e8815b31",  -- HUM_F_ARM_Astarion_Pants
+        ["51ae8337-9dd3-8552-f4c2-85e755a44503"] = "83489103-b03e-5ded-ac50-f32a5a31ac7e",  -- HUM_F_ARM_BG_Watch_A_Pants
+        ["3a2f737e-8f3d-a59b-d457-36e89775d423"] = "ee42bb84-934c-5020-8c90-4f60cd26e78c",  -- HUM_F_ARM_BG_Watch_B_Pants
+        ["f395018f-ffb4-03e8-add9-ed9698fb1e51"] = "509028d8-4c0d-5c79-ae2d-cfba926a7d75",  -- HUM_F_ARM_BG_Watch_C_Pants
+        ["a2edea05-8d9d-4d60-c128-6484fec0727c"] = "df79058a-eff5-5714-a2a0-b604ed0e15fb",  -- HUM_F_ARM_BG_Watch_Leather_A_Body
+        ["6bcaace7-2b7f-f347-bbbf-b7f6de1b406c"] = "1115d7c0-aad9-575d-8280-8adb26a9a965",  -- HUM_F_ARM_BG_Watch_Leather_B_Body
+        ["7eecdfb8-78f4-791c-dcdb-dce69bcf89a4"] = "b30a0ae5-e608-5bad-8eba-06763efa9f87",  -- HUM_F_ARM_BG_Watch_Metal_A_Body
+        ["73eaa7e2-e2c4-bb99-8cdd-c02bce1979f7"] = "eb9ecb15-9054-517c-a3fd-0907f810d927",  -- HUM_F_ARM_Bandit_A_Body
+        ["c18aac16-80cf-b3a1-7a68-2321e4e7f26d"] = "1016a100-8f5b-57e2-94cf-cc1ae0296747",  -- HUM_F_ARM_Bandit_A_Long_Body
+        ["4bf4a998-d2ae-a670-b31b-6efff35a28a4"] = "dc058110-8785-50bf-ad3e-be993dd270bb",  -- HUM_F_ARM_Bandit_A_Pants
+        ["2ec28d08-14cd-cf28-a750-ce566d791ef8"] = "5ac76741-ea05-53d7-a6d6-16311bfe330f",  -- HUM_F_ARM_Bandit_B_Body
+        ["fe22e643-1266-a94a-0b42-eba64f922d8b"] = "d877bf7a-6ebd-5597-89b5-a216cf79b707",  -- HUM_F_ARM_Bandit_C_Body
+        ["904fbbc1-fca5-af69-66b0-f883728baf77"] = "3943ee8e-9282-5ff3-92fb-390690f71fe8",  -- HUM_F_ARM_Bandit_C_Body_Accessories
+        ["5b042a61-3dcc-4a82-a2bf-b710f04abb81"] = "23bff0a3-4dde-5367-b166-fa45ea8b2d2d",  -- HUM_F_ARM_Bandit_D_Body
+        ["aa476663-1b31-19af-8e56-d071a91b74e8"] = "291a3326-1805-526e-a9d2-ad5aa6ae6ea0",  -- HUM_F_ARM_Bandit_D_Body_Belt_A
+        ["67cf64e2-d4df-d5c8-c988-bbe24c9ab0ef"] = "39b7bf39-c4e9-52bf-b704-0a6658ffaed6",  -- HUM_F_ARM_Bandit_D_Body_Belt_B
+        ["d2f744a0-4d40-1da3-bc2d-188cab1cf9cc"] = "18e7f795-df28-5fb9-8a03-9200886a3ec4",  -- HUM_F_ARM_Bane_Light_Body_A
+        ["c6f30055-6e56-88ec-afff-8b16e0861797"] = "a86b7957-6426-512e-9658-6270e386c8e4",  -- HUM_F_ARM_Bane_Light_Body_B
+        ["c390c1b4-9592-e7bd-45c7-25de362c39d0"] = "80e0ebdc-f0c7-5114-b5de-c6dbc91f03d4",  -- HUM_F_ARM_Bane_Light_Pants_A
+        ["070fb86b-3b1c-07b6-bda6-ae3f54e6202c"] = "a6f6f544-7a01-5d90-8f90-bb59699cd1b9",  -- HUM_F_ARM_Bane_Plate_Body_B
+        ["4e6a8fd0-0f1b-97d5-2938-156505003b0c"] = "8b7a6f2b-1606-5c37-81ed-13f854245f15",  -- HUM_F_ARM_Bane_Plate_Body_A
+        ["dde52dc3-cb63-0d90-393e-f3d9c3b8967b"] = "fb09406e-cd79-5176-adf5-0533e2ca33e9",  -- HUM_F_ARM_Bane_Robe_Body_A
+        ["3fb7ea07-c5dc-954b-c58a-a8ec276ace28"] = "037aefab-11fc-564f-ad00-df1587d9a9fd",  -- HUM_F_ARM_Bane_Robe_Body_A_Sleeve
+        ["6671bb2f-ab3c-ce01-30c5-05ab81e64ec4"] = "eea2d96c-1d75-5e3b-b3d8-19ce828ae071",  -- HUM_F_ARM_Bane_Robe_Body_A_Sleeves
+        ["577e0453-07bb-c66e-33b1-7bee394c1a7f"] = "61ead6ca-2dfe-5f87-ae6c-6dc2b26f41b7",  -- HUM_F_ARM_BarbarianMagical_A_Body
+        ["7723fc3b-12a2-9f4f-d753-adaf00b281ec"] = "2a7f1e3b-fb34-5b58-88cf-1574c42ac91c",  -- HUM_F_ARM_BarbarianMagical_A_Pants
+        ["bcdf262d-b528-2448-76cb-3444588738a4"] = "47baf8f7-3f6f-5492-ad61-12bef4a20990",  -- HUM_F_ARM_BarbarianMagical_B_Body
+        ["0aed3d1c-709d-3f1e-71f1-1134ba9e060e"] = "05324107-57e2-579b-b247-e6988f3e0e76",  -- HUM_F_ARM_BarbarianMagical_B_Chest
+        ["40c284ef-a371-eec7-a27a-dd277dee03cb"] = "2b71a807-238a-5b51-85ae-e3e07f5b712c",  -- HUM_F_ARM_BarbarianMagical_B_Pants
+        ["991c652e-3aa8-f8b1-609a-f8bd87b28636"] = "f6d35c00-66de-5d17-840c-376cb158b86a",  -- HUM_F_ARM_Barbarian_A_Body
+        ["1b60efd1-c080-f02e-4b7c-988699485ae0"] = "e2aa8a29-7ad2-54a9-beb7-3a3e533d960f",  -- HUM_F_ARM_Barbarian_A_Pants
+        ["11a29e17-99fd-0db5-ec2e-d90a40ec5b1f"] = "3ff3a99f-b854-5d76-912c-ffb544896507",  -- HUM_F_ARM_Barbarian_Karlach_A_Body
+        ["7cc5cafc-2bb8-3627-97e0-125d2c4fd084"] = "27da9caa-033a-550d-8935-29d386bec8a0",  -- HUM_F_ARM_Barbarian_Karlach_A_Pants
+        ["34fbe3a5-7d74-c705-a42c-4e9922fa12fc"] = "ca3d61f5-e2cd-566e-8aff-ff253585ffec",  -- HUM_F_ARM_Bard_BodyBot
+        ["69bf1065-75ae-2930-33b8-ac4a5bdde0ad"] = "0e45763b-1d97-587c-ba5c-d4ab8772ad78",  -- HUM_F_ARM_Bard_BodyTop
+        ["29153218-c410-bd1e-b23d-d615ead06201"] = "a6634417-4b93-5a0c-9e82-b7666e65f692",  -- HUM_F_ARM_Bard_Pants
+        ["a8b54d83-bbba-1c0c-a3a0-f8143409b018"] = "b9b2298d-7e82-5c12-b8f6-f407c0f87a01",  -- HUM_F_ARM_Bhaal_A_Body
+        ["aa09792f-4f55-dd17-c2f5-7ca30642a95c"] = "c3a65cfb-42bc-597f-a40f-8356604c6d7a",  -- HUM_F_ARM_Bhaal_A_Pants
+        ["f8c9f76d-d57e-d818-f028-6be46ef6ac5a"] = "39d8f533-121d-57ce-842a-00de75d403ac",  -- HUM_F_ARM_Bhaal_Rags_Body
+        ["5e07542e-8dd0-ef58-ef8e-f9c92a9a5670"] = "c45fd58a-ea1d-5c97-b10e-fef759263820",  -- HUM_F_ARM_Bhaal_Rags_Pants
+        ["9a255759-35b9-2aca-77d4-b8b331091887"] = "f8c5b00c-4b87-55ec-8b43-0db824f0b2f2",  -- HUM_F_ARM_BreastPlate_A_0_Body
+        ["40d6023f-73cc-cf97-7b7c-e0efa5ef2252"] = "a949694b-85df-551b-a358-86fbd551b825",  -- HUM_F_ARM_BreastPlate_A_1_Body
+        ["41f442ce-a9dd-57b1-8703-c0612de681ba"] = "273be19d-6531-5b1c-8dc8-649e0653c02b",  -- HUM_F_ARM_BreastPlate_A_2_Body
+        ["2d76e68d-122c-ca1b-eae6-2754d6f2a427"] = "690fb051-8e19-50aa-80ae-4a1954acdfc0",  -- HUM_F_ARM_Breastplate_A_1_Pants
+        ["52a0a341-e040-3d36-14cf-9ddbb1964d86"] = "3b7bcbb2-8724-5d51-b99d-42fba306aaa8",  -- HUM_F_ARM_Breastplate_A_0_Pants
+        ["7842adad-0d32-2845-321a-ae53e02759c7"] = "98f1b4ad-b884-5931-9210-f34d24030a55",  -- HUM_F_ARM_Breastplate_A_2_Pants
+        ["4b220494-227c-2286-06e7-81f5aa621fbc"] = "23fdbbb3-4116-5dce-806c-f9367a9a3395",  -- HUM_F_ARM_ChainMail_A_0_Body
+        ["746d3091-9b4e-05d2-d6e3-990e88b4e697"] = "808d653d-cd0e-5260-8257-429f859a06a1",  -- HUM_F_ARM_ChainMail_A_1_Body
+        ["ea647791-dae1-f65a-4045-d971868d70a7"] = "5e55f124-ae42-5eb4-9358-de843a76ea35",  -- HUM_F_ARM_FlamingFist_ChainMail_A_1_Body
+        ["7a0a8086-cf8a-8526-7196-3f96c1a31764"] = "df6f235e-c059-5ab7-9070-5e11b1d50117",  -- HUM_F_ARM_ChainMail_A_2_Body
+        ["57aa9036-497a-bc54-7889-763bcf0f5ecd"] = "67694d50-a0ab-5d56-ac98-2a39723b13cc",  -- HUM_F_ARM_ChainMail_A_Pants
+        ["c977d6cf-90ba-08f5-0d6a-96bfcbc2ff37"] = "915c80d7-04dc-5990-95c9-2d05ccc74aee",  -- HUM_F_ARM_ChainShirt_A_0_Body
+        ["e5b5a50e-2200-ee2a-2cac-1868323d3c2b"] = "6441f822-914a-5822-90d8-e4260cdc3254",  -- HUM_F_ARM_ChainShirt_A_1_Body
+        ["adc9638c-946d-f253-fab5-a2185780e38e"] = "dbf9a3e7-d775-573d-9be8-3c42190f7536",  -- HUM_F_ARM_ChainShirt_A_2_Body
+        ["c18914df-2ecd-7418-df18-e27521d89e07"] = "27918870-626d-5901-8591-16d93f832c46",  -- HUM_F_ARM_ChainShirt_B_0_Body
+        ["f6000495-b090-d2fc-1d8c-8b3269ac469d"] = "19cc0610-89b7-54fd-a425-6d0b228de8d1",  -- HUM_F_ARM_ChainShirt_B_0_Broken_Body
+        ["f8be761d-9160-c57d-fd57-436735b91403"] = "65e261bf-e586-5f04-b04b-201445f5fdca",  -- HUM_F_ARM_ChainShirt_B_1_Body
+        ["9a04bfd8-2a6f-a2b6-6c18-3921a81df32e"] = "4bdafb8e-3c74-5697-a940-98ef206f504c",  -- HUM_F_ARM_ChainShirt_B_2_Body
+        ["7f17b0c8-69dc-799f-457f-aa9b0edf87cf"] = "b2f628f6-6256-54e4-b529-dd09771e8270",  -- HUM_F_ARM_ChainShirt_B_2_Pants
+        ["86beb015-ba3b-e2f5-8fc1-a13eaae763ed"] = "4718df68-1d5c-5b4c-8e9d-6d95780f37c6",  -- HUM_F_ARM_ChainShirt_B_Broken_Pants
+        ["2a24cc0a-bf6a-042b-3d02-237596da3a02"] = "c3d8595f-19f2-592c-b45f-d4bcb105fd45",  -- HUM_F_ARM_ChainShirt_B_Pants
+        ["46d2d271-a292-6511-ab69-b5b3fb8d4732"] = "7ea0a1a1-635b-52be-8bd9-e905c1721d01",  -- HUM_F_ARM_ChainShirt_Shadowheart_A_Body
+        ["355acc60-c8ae-129a-f9b8-fd46d66a9cd9"] = "04392424-7085-571a-9e4a-558d33951e00",  -- HUM_F_ARM_Cloth_Magic_A_Chest
+        ["7626ae1c-1f46-fc33-f267-fa42d6f00a5f"] = "09df102a-e819-5cec-93f5-00615aee43b0",  -- HUM_F_ARM_Cloth_Magic_A_Pants
+        ["75fe0fe7-8b43-7c04-d6ff-559601640e7b"] = "6e357589-b15b-5d44-b2b8-ce82e1c8e3e4",  -- HUM_F_ARM_Cloth_Magic_B_Chest
+        ["fcfff744-87aa-18d1-71b6-dd3dde8ffd2f"] = "60fc3338-61a9-5e49-baa3-dd0a27fe4a0c",  -- HUM_F_ARM_Cloth_Magic_C_Chest
+        ["d1228194-ed35-a085-f73b-469f46be1a63"] = "dfa38157-be33-5c62-8842-0819640c699c",  -- HUM_F_ARM_Cloth_Magic_B_Pants
+        ["d1c28da5-1518-5565-e948-546ff74f14b9"] = "eb5accdc-5f69-5795-8e20-a2128536bc6a",  -- HUM_F_ARM_Cult_Absolute_Body_A
+        ["40c6743d-7f7b-9a36-ea69-ee5be3fd42ef"] = "c439a849-528f-5761-8b06-bd883472ba0c",  -- HUM_F_ARM_Cult_Absolute_Body_B
+        ["e936b4b2-5c11-ff4a-a9b4-7a744844e508"] = "bbc10a33-2894-54ef-8954-8b80a7e18ce3",  -- HUM_F_ARM_Cult_Absolute_Body_C
+        ["4fad5d72-61e3-a66d-5789-5adb266d5262"] = "a47112e4-a15f-5746-993a-b69a7c3c23d6",  -- HUM_F_ARM_Cult_Absolute_Pants_A
+        ["f593ca9c-fb69-ce98-58b2-d240acb832ee"] = "e9fd6dd0-6e45-5821-b353-8f940fedf732",  -- HUM_F_ARM_Cult_Absolute_Pants_B
+        ["92904542-5941-883f-5ef9-64ed849223c3"] = "0e0fc207-f234-5bd2-94ae-04840c04aa24",  -- HUM_F_ARM_Cult_Absolute_Robe_Body_A
+        ["223c2250-b8d2-02f8-7d81-3a5dd8aba412"] = "10e03c56-36fb-539a-8af5-557354b41044",  -- HUM_F_ARM_Cult_Absolute_Robe_Body_A_Belt_A
+        ["9423615d-6287-ba55-b5ac-9120d68abbf9"] = "49a695c6-4d70-516d-a5a4-5a5291033a43",  -- HUM_F_ARM_Cult_Absolute_Robe_Body_B
+        ["ab01e06f-c22c-4389-6d09-170408da0397"] = "d02e7a1d-0521-5200-a5f0-30f422d96091",  -- HUM_F_ARM_Cult_Absolute_Robe_Body_C
+        ["7ac2ee68-c81a-5acb-bc20-0dd74798d4ca"] = "12a8380c-a9af-5c1a-b363-5df400fa6be9",  -- HUM_F_ARM_Cult_Absolute_Skirt_A
+        ["8f018691-9ad2-8fda-e332-4625fdc9be38"] = "d364d7ed-8d80-504f-8b5f-0d6939905593",  -- HUM_F_ARM_Cult_Absolute_Skirt_B
+        ["6d3ff410-6a56-1570-945b-c9400294efd3"] = "e2ba218e-a90a-5b21-b69a-ed34a08b6c9c",  -- HUM_F_ARM_Daisy_Body
+        ["8629e0f0-bf23-f8d7-aa26-059bdee2f274"] = "583f22eb-5ac2-5619-800b-6c7090e87b01",  -- HUM_F_ARM_Daisy_Pants
+        ["47550623-1e6d-c1ee-8d8b-c104e3212add"] = "6bf119c4-8ac1-5ec1-ab20-03ce6e92ade4",  -- HUM_F_ARM_Shadowheart_Dark_Justiciar_Body_A
+        ["64f991ff-b533-4095-7fe7-68484ec99438"] = "0a018a15-c61c-55e6-acf0-6e2b1fda77b5",  -- HUM_F_ARM_Dark_Justiciar_A_0_Body
+        ["5878c12d-03ae-58e1-3010-76819284ebd1"] = "094f84fa-2613-5c22-b209-f594927e8b51",  -- HUM_F_ARM_Dark_Justiciar_A_1_Body
+        ["ae75ef0b-1265-48c8-b295-62d0d140fe44"] = "fe741c30-668a-5007-bdb8-b818f9f09e5e",  -- HUM_F_ARM_Shadowheart_Dark_Justiciar_Pants_A
+        ["b639f736-82cf-9765-bf2c-4b55725e1fdf"] = "084c51d8-44dd-53b6-aa31-ce9638eacded",  -- HUM_F_ARM_Dark_Justiciar_A_Pants
+        ["da47419f-1174-c82e-a26e-e813f658d0c9"] = "4c96503f-3d16-5477-a3b2-d0839e09f5b7",  -- HUM_F_ARM_Dark_Justiciar_Damaged_A_0_Body
+        ["a79c23c2-d7fd-f97d-f7c2-72b699efb3ed"] = "6e30687d-fef8-5a29-bc05-7b11ba286f2e",  -- HUM_F_ARM_Demon_A_Body
+        ["abd56050-e481-c65c-e113-a097267fc46b"] = "1b9e7823-21cd-5920-b3b8-d1fd88d96856",  -- HUM_F_ARM_Demon_A_Pants
+        ["20b5ba6a-3d8c-1190-8f3e-693a16c0bd2d"] = "2820c446-d574-5acd-8eb5-29d05b7e32c8",  -- HUM_F_ARM_Desire_Dress
+        ["af423ae5-de48-9fed-6ea7-982d4c822dc4"] = "b90f9686-866d-5cbf-b6a8-740e5cdd8755",  -- HUM_F_ARM_Desire_Pants
+        ["7a3000df-92f1-be0d-b367-0a6916bd2a7d"] = "eefc15d3-2b33-5692-9028-d47600564b5c",  -- HUM_F_ARM_Devils_Blacksmith_Body
+        ["ae3551af-f085-6a5e-cd1f-2d73903c3c73"] = "9128a39d-3e9e-585b-9752-286bd2f45815",  -- HUM_F_ARM_Devils_Blacksmith_Pants
+        ["9691c75a-8cee-b6df-b212-f4ce74886bd1"] = "1b8dd1ca-acca-5f44-a681-d1f8d2d1d045",  -- HUM_F_ARM_Devils_Blacksmith_Pants_B
+        ["8523fbab-d973-bbfb-7aa2-2449a7587996"] = "dd86c5d8-fd75-5a92-9e3f-86d77de10a20",  -- HUM_F_ARM_DrowLeather_A_Body
+        ["aba6f4a5-c062-6481-afd8-7be4c19e3877"] = "b055bca4-8046-5158-99cd-d93b823ca05e",  -- HUM_F_ARM_DrowLeather_A_Pants
+        ["5e46bd3c-6ecf-dda1-e5ec-defa96bd9eff"] = "06f7c34b-4249-5965-a9ab-76dddf9a9823",  -- HUM_F_ARM_DrowLeather_B_Body
+        ["f2efe983-d13d-0da6-34a8-d6a6dbd5f328"] = "72c7afd9-ceb9-5314-ae24-602588db4dd7",  -- HUM_F_ARM_DrowLeather_B_Pants
+        ["eee49ed4-6498-d170-da59-46b1cedcefbc"] = "9768bcdb-3065-5a57-b939-5765f1497167",  -- HUM_F_ARM_DrowLeather_C_Body
+        ["8a1afa94-327f-2d6c-ac2c-dd8de339c225"] = "56ab4449-23b7-5a4a-a02b-60287f91da9f",  -- HUM_F_ARM_Druid_A_Body
+        ["f358cebf-6795-3bc5-adb9-463015af6888"] = "b38b35bc-def5-5a00-87f2-9c11fd8bb163",  -- HUM_F_ARM_Druid_A_Body_Leaves
+        ["86c56da4-ddad-22d9-4375-bb8800380fc4"] = "36bc04f7-82ec-585f-a9f7-2600d0fbce8a",  -- HUM_F_ARM_Druid_B_1_Pants
+        ["10f69796-9490-29fd-074b-a8d14b2a94f2"] = "bb1aee57-e0ed-5df8-8ca9-6b4089e2cbca",  -- HUM_F_ARM_Druid_B_2_Pants
+        ["3f27e356-0f04-0b9c-3363-19d59d648f09"] = "48a13f5c-9694-5ba6-98c2-67116d5629bd",  -- HUM_F_ARM_Druid_B_Body
+        ["70385c52-b782-a539-aae9-a5bde03aef61"] = "b1e2680d-9cb3-5d91-90ff-8364bab8cb25",  -- HUM_F_ARM_Druid_C_2_Body
+        ["b6b27f8b-060c-1f74-4557-1ca70aa83783"] = "ebe50f03-54f7-5dbc-97f0-81fdd7253124",  -- HUM_F_ARM_Druid_C_Body
+        ["30751bdc-98e5-4e70-2d73-5d17ad6a766a"] = "2f505034-3a81-5d3e-8a52-9fedca159546",  -- HUM_F_ARM_DwarvenPlate_A_Body
+        ["72c1578a-153a-5e91-b98e-b895ef850102"] = "60b5d969-f9b3-5339-add3-1bcb478d1fb8",  -- HUM_F_ARM_DwarvenPlate_A_Pants
+        ["ab0f614d-c855-6eaa-c6e7-5802bdcdd944"] = "999d3578-1ab9-5ac3-b12d-b7f11dfae5fc",  -- HUM_F_ARM_EPI_Robe_Shar_Body_A
+        ["f94c451b-bfa1-9fa5-eee3-6acf1d1a073c"] = "966e5695-cfab-5a70-863b-fbe2310e6b1c",  -- HUM_F_ARM_Elven_ChainShirt_Body
+        ["ab162662-4ed3-3c46-6fc9-2269b9e96c45"] = "39f49f1d-8747-52b6-93c0-08142ef28462",  -- HUM_F_ARM_Elven_Umberlee_Chainshirt_Body
+        ["4efcdd6b-63a1-f238-b40d-9eeba145e4b5"] = "e2ae2f10-1d5a-5e2b-aea9-91eaa669636a",  -- HUM_F_ARM_FlamingFist_Halfplate_A_0_Body_Pin
+        ["5ad493a4-3b43-ac38-120f-3a306218d9c8"] = "5c96027a-7ee0-5c2e-9e8d-0032bf69c5d3",  -- HUM_F_ARM_FlamingFist_HalfPlate_A_1_Body
+        ["6444108d-0e23-fbe5-a27d-e86f31330b34"] = "725ae3e0-cd37-5d9f-8bf6-8f6a83c00535",  -- HUM_F_ARM_FlamingFist_Halfplate_A_0_Body
+        ["782867e4-a17b-89a2-5556-ad3d70d66489"] = "65bedf0b-d982-532d-8160-9319f0e76b41",  -- HUM_F_ARM_FlamingFist_Halfplate_Marcus_Body
+        ["d2cd78eb-2199-a0b2-1fd3-cc95cc4785ff"] = "fae23150-2f3a-52fa-b61f-e4b0e1941836",  -- HUM_F_ARM_FlamingFist_Leather_Body
+        ["06590900-7c2f-8087-4121-18d84631b106"] = "1b4c9d7a-d620-5504-9226-a4d08bbed839",  -- HUM_F_ARM_FlamingFist_Robe_Body
+        ["ddfe0903-7361-3e46-50e9-ef1a77dfd057"] = "d7ab4870-6ae0-58b9-96f0-a1de2a113572",  -- HUM_F_ARM_FlamingFist_Scalemail_Body
+        ["75e5b7e7-3c17-6a19-c3db-6c94084dff4f"] = "0c528635-67e0-5c11-a739-67bcd009dab1",  -- HUM_F_ARM_Githyanki_HalfPlate_A_Body
+        ["dde1397d-d127-00a9-6c0f-39f924f4d777"] = "34bbb092-e4c7-561d-b7ef-eb1d8a215820",  -- HUM_F_ARM_Githyanki_HalfPlate_Leather_A_Body
+        ["fdbfa9ae-c140-9270-0b8c-d8e475e9d767"] = "7f3e8934-ef39-52bf-ace4-b75a8bd1b40f",  -- HUM_F_ARM_Githyanki_HalfPlate_A_Pants
+        ["640e0bc8-f648-f14a-cbb1-6e762e498ae9"] = "4c4b3d9b-d750-58f7-9947-7f464a9c3994",  -- HUM_F_ARM_Githyanki_HalfPlate_B_Body
+        ["87ed8561-ee52-8cc2-fae7-b375940d23fe"] = "b6f82273-8e08-56d8-8a3c-aa3552d7e365",  -- HUM_F_ARM_Githyanki_HalfPlate_Leather_B_Body
+        ["281249cf-2236-1738-2646-2ec5082b51e2"] = "84cf61ba-3961-5055-a927-44d51db0dbe0",  -- HUM_F_ARM_Githyanki_HalfPlate_B_Pants
+        ["7ed2928d-4e3c-bb5d-bc13-10b3abf14823"] = "d2b96277-a6f4-551f-a711-b9cf70b20b19",  -- HUM_F_ARM_Gortash_Body_Jacket
+        ["165491b8-6344-efc1-ad62-b8a6547c1052"] = "68ec85d9-0a6e-56e3-8d79-9430b20760fa",  -- HUM_F_ARM_Gortash_Body_Skirt
+        ["8234a9bb-3b79-4691-459f-024ec60ab109"] = "0a537b7e-4049-543d-b6f5-2ae4978c4298",  -- HUM_F_ARM_HalfPlate_A_1_Body
+        ["f0fa736a-804a-5bee-3aa8-dcc130c01f38"] = "11524143-ba2e-5616-9f00-457c812722cf",  -- HUM_F_ARM_HalfPlate_A_0_Body
+        ["d8e274b7-5bd8-70a0-0d1d-bfe17aae40d2"] = "663b69e8-4d94-5774-bd93-7c8f974c54d1",  -- HUM_F_ARM_HalfPlate_A_2_Body
+        ["05a76972-4b7c-7b02-a5bd-5ad8f664b7e7"] = "af8a3c2a-a020-5ec8-b8eb-b977d88e6cf3",  -- HUM_F_ARM_HalfPlate_A_1_Body_Shoulderpads
+        ["0d1e9563-5fef-e704-5c71-273dd0a5bb5d"] = "1ae0695a-aa35-5929-8f4a-2adc39d82659",  -- HUM_F_ARM_HalfPlate_A_0_Body_Shoulderpads
+        ["dcfaaada-b1b2-21bd-bffb-e4f0059bac19"] = "e4cbd909-4199-5fdf-9a27-e4b2b5dd72ab",  -- HUM_F_ARM_HalfPlate_A_2_Body_Shoulderpads
+        ["89d15a0f-20e0-8309-922f-f9e6fd3a408a"] = "7c240d57-9649-50ec-9696-0718a0fda677",  -- HUM_F_ARM_HalfPlate_A_1_Pants
+        ["addcf306-1dc0-041e-8035-f17ce2a511cf"] = "1b5be07e-5cc2-53d0-a4fb-4b793b1b2df0",  -- HUM_F_ARM_HalfPlate_A_2_Pants
+        ["f689fa3d-8047-77e7-cf71-4cddcd476748"] = "f5bb4d3a-70d3-5ba1-b97b-d106aa1cd32f",  -- HUM_F_ARM_HalfPlate_A_0_Pants
+        ["8163e3db-992f-5232-0d93-3e115d1c5325"] = "4d9837ce-23fa-5a26-afcc-5723577e6430",  -- HUM_F_ARM_HalfPlate_B_0_Body
+        ["d5d8886f-255e-c24d-1b53-627b86a57f85"] = "4581678b-92bb-5cc4-b506-befeb5d73d8d",  -- HUM_F_ARM_HalfPlate_B_0_Skirt
+        ["0d9ccc2a-2877-0aa4-34e7-515ca1a25c68"] = "c6af1c3d-2c0c-55d8-85c7-272bd1f0a82f",  -- HUM_F_ARM_HalfPlate_B_1_Body
+        ["018611dd-f4a5-09bb-2239-9ee9b04996ea"] = "75eff336-8081-53a5-bf4c-f6b4f6e60f32",  -- HUM_F_ARM_HalfPlate_B_2_Pants
+        ["364e4254-fd0d-a55f-8822-9ff105c6b55b"] = "e1280119-bf42-5fd3-b58f-0f18b2c8d177",  -- HUM_F_ARM_HalfPlate_B_1_Pants
+        ["e08a82f1-c191-09be-3223-989d4d2c69fe"] = "7524c026-8418-51ef-a8a0-c820144902bf",  -- HUM_F_ARM_HalfPlate_B_0_Pants
+        ["6b7c0656-2be7-75c9-a99c-132aef475bfb"] = "2c572270-d609-59cd-9269-33605ffed8ad",  -- HUM_F_ARM_HalfPlate_B_1_Skirt
+        ["9e0dda43-4f5d-db94-98fd-d4188eb558a4"] = "72ad9ada-74f5-5eb2-ba18-e0c9fefa6911",  -- HUM_F_ARM_HalfPlate_B_2_Body
+        ["f0057ae6-6efb-9b6a-9849-feb67cdfc48a"] = "baa98235-891c-505d-ae56-42ac906b6156",  -- HUM_F_ARM_HalfPlate_B_2_Skirt
+        ["28b9efee-0da6-f29d-1f00-6977155b8fb5"] = "15c4d117-7d40-5aa8-8658-0b1b5de67875",  -- HUM_F_ARM_HalfPlate_EndGame_Body
+        ["01e98505-64e9-81bb-4419-9b27c451aff9"] = "bf2621e7-18a0-533f-b91a-fba69c0a4fc4",  -- HUM_F_ARM_HalfPlate_EndGame_Pants
+        ["33c3502d-8ef5-b4ab-059f-7a4f8cbfefc7"] = "95ded393-2ea7-5cb4-a426-75681c57b99c",  -- HUM_F_ARM_Hide_A_0_Body
+        ["f6399f9e-19ae-cbad-d113-f72ac1574b19"] = "db61b9f3-e7f3-5ba6-924f-1e91742ea180",  -- HUM_F_ARM_Hide_A_1_Body
+        ["3e6b87e1-4b57-50f3-a06b-7c3ced1bb4ef"] = "6471b131-bca7-56cb-95d3-f902851c94ff",  -- HUM_F_ARM_Hide_A_2_Body
+        ["cb592497-afb7-f684-0daa-4af5b81c186c"] = "6b1c8514-e481-51db-8377-d11cc79de9dc",  -- HUM_F_ARM_Hide_Druid_1
+        ["e62bf9cd-7779-92c1-df3e-99c3de5df172"] = "018f2caa-ec18-53bf-98ba-4b203adf9369",  -- HUM_F_ARM_Hide_A_Pants_A
+        ["5efbe777-69e7-97e0-e59b-beece8550742"] = "a52ba6c4-8150-5ddf-8ac0-09316c3d84a6",  -- HUM_F_ARM_Hide_A_Pants_B
+        ["d21c0b33-ae6a-7e31-c749-6e2ee855700c"] = "017dad66-723e-5889-bdd7-02d359b843c7",  -- HUM_F_ARM_Infernal_Robe_Pants
+        ["fdea9130-9c3a-aa7a-66a1-8e5dec87a1c6"] = "2b63d52d-93b5-5b69-b27e-2ac354e37b5c",  -- HUM_F_ARM_Isobel_A_Pants
+        ["32f77742-2d5e-39a8-3b6b-6541fa09e05d"] = "040b01a9-1d0e-50cd-ac62-62aeabde6e3d",  -- HUM_F_ARM_Isobel_A_Body
+        ["00b5bc65-3298-0d52-1200-6377414e1fc7"] = "ab34e795-6e0b-52d6-963f-5787fc5eee65",  -- HUM_F_ARM_Infernal_Robe_Body
+        ["c911aacc-69b4-a52f-77ac-ae2ea41c72d7"] = "6075f5cb-4151-5a96-90c0-8df64e2d8d04",  -- HUM_F_ARM_Isobel_A_Robe_Body
+        ["21041aa7-c364-e341-60a2-c7ae861bca79"] = "5195db84-3e6d-5edc-9e6a-650ffb639128",  -- HUM_F_ARM_Isobel_A_Robe_Skirt
+        ["2dccb52f-cb96-13c4-0241-7ac9c8a69d81"] = "7b3cd848-33c9-5474-88ca-b0aea902e8de",  -- HUM_F_ARM_Jaheira_Pants
+        ["d0336146-7ecc-0b01-520b-98985a34c0ba"] = "c714916d-ace5-5b87-91c2-2ae0f589bc9d",  -- HUM_F_ARM_Jaheira_Skirt
+        ["1ae5d864-e9b7-be32-5f04-88da2699fb97"] = "4b31beba-f07d-5ba5-969d-731506918436",  -- HUM_F_ARM_Karlach_Epilogue_Player_Body
+        ["fb084ed8-92e2-e11e-db79-2d22069c7a67"] = "4ca88123-0bb7-5feb-b21b-9d869b079cd5",  -- HUM_F_ARM_Ketheric_Body_A
+        ["03a18f12-cda7-40be-fbf2-707cd5fdd806"] = "44a86c36-4273-547e-81fe-df77b45f0524",  -- HUM_F_ARM_Ketheric_Pants_A
+        ["79ce64fd-01f6-f04e-4386-83018e3321a6"] = "73a8d125-4704-5ed8-aad4-d04f064f165d",  -- HUM_F_ARM_Laezel_Githyanki_HalfPlate_A_Body
+        ["b601d974-bdcc-4653-ba7c-58ef45a0c5e4"] = "0d87da1b-18b3-5034-900c-4b122134ff9c",  -- HUM_F_ARM_Laezel_Githyanki_HalfPlate_Broken_A_Body
+        ["956e11cc-41da-9e43-036b-c59a70c1b945"] = "6cc531d9-a288-50ba-a891-c1917e7d818a",  -- HUM_F_ARM_Leather_A_1_Body
+        ["d6f8ef96-3674-39c6-3e7a-73f94bdd5595"] = "bdf670d0-7a78-53ce-a71d-edd4b61ba798",  -- HUM_F_ARM_FlamingFist_Leather_Pants
+        ["f29af014-91cb-f1a8-3b6f-d59de4ae8e91"] = "7dfb06bf-e196-575d-b96c-0b39a92a57e8",  -- HUM_F_ARM_Leather_A_1_Pants
+        ["b36b4826-00a5-0a1a-f1e7-1e13fb7192db"] = "508f3ec2-86f9-571e-87d3-beb0b66b19f2",  -- HUM_F_ARM_Leather_A_2_Body
+        ["a8b2d37c-aee8-7458-c570-638c830d31d1"] = "cacc02a2-cbb6-5aba-be8e-4b82908a918f",  -- HUM_F_ARM_Leather_A_2_Pants
+        ["e4bd0d2b-0160-f802-3429-7bb4b305a613"] = "3e8cfeec-20f6-5258-9e7c-01cef39cfabc",  -- HUM_F_ARM_Leather_A_2_Guild_Pants
+        ["66bcfba0-cea0-504f-2790-053dc8cb0bbf"] = "15dceed4-f1fe-52be-a7ad-aad62eaddc1e",  -- HUM_F_ARM_Leather_A_Body
+        ["27e35669-4d7c-b39a-6476-abbff870074c"] = "4402b26a-0110-5894-afd9-1a639f740b6d",  -- HUM_F_ARM_Leather_A_Pants
+        ["a506a44a-d295-01b5-37f2-c19e33aa62c9"] = "7cf96297-eb16-5ae3-a15f-9908e2ce0aa1",  -- HUM_F_CLT_Drow_Pants_A
+        ["1e87abcb-c98a-538a-c9a1-00df18b91355"] = "99627c97-3e53-5d94-a77e-caf3c3f79ae6",  -- HUM_F_ARM_Leather_Old_A_Body
+        ["aeedba01-02a7-25ec-bca5-b314ba4c4fee"] = "264eab83-6b06-5225-b49a-53a601eaad7e",  -- HUM_F_ARM_Leather_Old_A_Pants
+        ["3693fa90-0f57-6cb7-d8e9-b46d64a14e70"] = "a4793308-4d73-5646-bab4-a93012bb7f94",  -- HUM_F_ARM_Leather_Old_A_Pants_B
+        ["6d5c83a6-cce9-4dff-6735-a7e015bdc82c"] = "04b99e2c-c6ba-5539-84ea-b88cffb51245",  -- HUM_F_ARM_Leather_Old_A_Pants_B_Kneepads
+        ["0ff48dde-2f79-77e4-a76b-4e119f8ed081"] = "eb9e80b0-546b-5ebd-ba33-297bac6431b7",  -- HUM_F_ARM_Magic_Monk_B_Body
+        ["ca714562-2c20-67e8-8db8-34ee8e354534"] = "e9e89e02-a80d-53bd-aa67-f8d2b0f2c372",  -- HUM_F_ARM_Magic_Monk_Body
+        ["c3070973-5315-4061-70a3-c81b7af8992e"] = "c97c17b4-ef5f-51b2-8d72-7239dd4f0d3e",  -- HUM_F_ARM_Magic_Monk_Pants
+        ["52372a10-326b-b2af-4b35-f5cc5919cb2e"] = "ee8dd0a0-4d80-5629-85ff-8bfb8118f26a",  -- HUM_F_ARM_Magic_Monk_Pants_Scarf
+        ["49926d18-9968-fe7d-cd69-8d69b3888a58"] = "86fcb623-330f-5136-928e-4d00e3f436f8",  -- HUM_F_ARM_Mindflayer_Body_A
+        ["beae81d8-4251-f077-4463-0cf6e541f71f"] = "97ebb9b6-033e-5aa2-a3c4-8b2cecb47584",  -- HUM_F_ARM_Mindflayer_Pants_A
+        ["49551064-df2d-4baa-bf8d-48893db8af50"] = "124175a6-1d32-5c1a-a4ed-ea22411ae13c",  -- HUM_F_ARM_Mindflayer_Skirt_A
+        ["ff401e93-8d2f-4bb2-66f6-a1d879f38ad2"] = "7ba8938a-af9c-528e-9e89-b3f5c0bd8f31",  -- HUM_F_ARM_Monk_A_Body
+        ["48a70a5d-f440-ab7d-f0a7-308d3a6d830f"] = "1bb13990-9e15-5a3a-a414-631651014a96",  -- HUM_F_ARM_Monk_A_Pants
+        ["7d323252-e866-db48-dff8-ba787efef763"] = "67a87487-7176-5383-aedb-5d4cfe4752a7",  -- HUM_F_ARM_Myrkul_A_Body
+        ["a570519e-f495-8f55-108d-8f8a076b562a"] = "53741e4c-2dc1-557c-ad35-9fc3f77af77a",  -- HUM_F_ARM_Myrkul_A_Pants
+        ["adf969ed-6b7d-f4a9-c743-4856e552b246"] = "71abec15-5035-5163-a80c-7e592b66290f",  -- HUM_F_ARM_Myrkul_B_Body
+        ["507bb7aa-294b-0e8c-ca3a-ca5bf52e5caf"] = "6a229dcc-b568-5c14-add7-0d3503b51ba3",  -- HUM_F_ARM_Myrkul_Plate_Body_A
+        ["a5ad64ac-5d73-a959-60e5-22a13c19445c"] = "59239333-cb7a-55fe-96b0-22b4df4f169a",  -- HUM_F_ARM_Myrkul_Plate_Body_C
+        ["c7d97828-bd40-e39f-8f6b-ee87bb5de187"] = "5c523feb-0456-56e2-8e28-15f4fdf94dd3",  -- HUM_F_ARM_Myrkul_Plate_Body_D
+        ["5eddf203-8eb5-9db0-5eba-60c77f765c02"] = "7b6c9fee-232b-5dba-964a-e7f384b709b7",  -- HUM_F_ARM_Myrkul_Plate_Pants_A
+        ["d2cbe9dd-1de9-541f-aa9e-03d32f1bd3d2"] = "2609f8b1-4b2b-5951-b313-79bd675c98e7",  -- HUM_F_ARM_NightsongPrison_Body
+        ["93399195-5282-44b9-9d98-bb288faedc52"] = "ee831093-a4e4-5b51-8ff1-58daa684a654",  -- HUM_F_ARM_NightsongPrison_Pants
+        ["4db1eff0-08f1-c83b-eb61-2e40c837f1e7"] = "c0a54a5e-99bb-5855-b04d-c59626eed989",  -- HUM_F_ARM_Nightsong_Body
+        ["8f81b249-93b0-cd99-c27c-3b6987232f19"] = "6959cd5d-252a-5c98-b92c-6b81df5bce5f",  -- HUM_F_ARM_Orin_Body
+        ["a22984e8-b28c-46e9-5862-930af7b7b136"] = "0f892ee8-28f6-5d28-a9a9-754662c2d047",  -- HUM_F_ARM_Orin_Body_Player
+        ["092db3bc-9cbc-87aa-c21c-d0016f80bbc7"] = "77849787-7d4d-5c1c-9d7d-ef6f34ca380e",  -- HUM_F_ARM_Orin_Pants
+        ["f6d6d155-6390-a211-e86b-73a977b9738a"] = "8095cbc7-6903-5130-8066-ea236fcbe9fa",  -- HUM_F_ARM_Orin_Pants_Player
+        ["113bae24-e267-5982-59ed-1454a41cce60"] = "fec28c24-a33c-560e-b69b-3e943a421425",  -- HUM_F_ARM_Padded_A_0_Body
+        ["9ea94d2f-f341-1cb4-a780-d9724474758d"] = "327b3118-640e-542f-9499-2557ad1acb40",  -- HUM_F_ARM_Padded_A_0_Body_Broken
+        ["e4865cdc-10de-62ec-aedb-ac32b7973dee"] = "e7cf8428-be34-5b52-a6f9-0e1913e5357d",  -- HUM_F_ARM_Padded_A_0_Pants_Broken
+        ["057b7784-3ae7-1c5a-e404-d502b6602bae"] = "a5e88f8d-cea9-5944-bdf1-c0070b030106",  -- HUM_F_ARM_Padded_A_1_Body
+        ["f9a9aa02-5ceb-1ff8-beac-5ff9a3243f41"] = "c81cbf38-2b0c-542e-8a0a-19ce727057ff",  -- HUM_F_ARM_Padded_A_1_Body_B
+        ["6b3bf5e0-d886-8646-0623-2fcff33a3695"] = "80873062-5118-56e3-8439-bcc6714964f6",  -- HUM_F_ARM_Padded_A_1_Body_Spring
+        ["74bb8dd6-2010-f90d-caa1-a172ad5c4a95"] = "f9460b40-d057-5b2c-aa3a-5d9c7dece991",  -- HUM_F_ARM_Padded_A_2_Body
+        ["29b64740-a9cf-d0f4-c536-0bd7b631e710"] = "c183f0d1-0286-5d07-80a7-a89811f9a679",  -- HUM_F_ARM_Padded_A_2_Body_B
+        ["c80e582d-0f68-62a3-bc89-5738d2000319"] = "b20cec72-7b5a-5a05-89b6-30ce9f3e0731",  -- HUM_F_ARM_Padded_A_Pants
+        ["e704163f-d9ea-6dbe-c897-b44b042f1769"] = "6eabee68-1810-5078-93c1-ad6046ab6d44",  -- HUM_F_ARM_PlateMail_A_0_Body
+        ["9b33ece1-b01d-74f8-7ef1-4183cd80220c"] = "0d32a20c-fafa-5a0d-b62c-c09ddb805119",  -- HUM_F_ARM_PlateMail_A_0_Skirt
+        ["a7cf3830-d44f-a31a-9e90-ffb00e718078"] = "e55cdad6-0e25-5545-8b44-abd93310a20d",  -- HUM_F_ARM_Paladin_Oathbreaker_Platemail_Body
+        ["b457d115-a6f7-7f10-f674-7eea94896eb9"] = "0c7a4d50-75e8-51a2-9825-a11d3ce67c0a",  -- HUM_F_ARM_PlateMail_A_1_Body
+        ["5f58f18f-ec6b-10c3-8462-0603dca6e573"] = "a4cb3433-f527-5f3e-8aac-066ebc2d3808",  -- HUM_F_ARM_PlateMail_A_1_Skirt
+        ["f8c8854d-1f75-7595-932f-5bcc78051351"] = "707d3dcd-e37d-50ae-9b90-c27b7aec28cf",  -- HUM_F_ARM_Paladin_Oathbreaker_Platemail_Skirt
+        ["04a5084e-efe5-f61d-5a28-577b059cbaaf"] = "6262dc15-51b3-5a64-8a1a-2a1ec46a91dc",  -- HUM_F_ARM_PlateMail_A_2_Body
+        ["153fafa5-944d-9f49-c1ac-bc96ebc81383"] = "dd6d84dd-fb82-5bb0-b1d8-1cc266e2c81a",  -- HUM_F_ARM_PlateMail_A_2_Skirt
+        ["4961b222-0434-2ce6-8cbd-67c36c2f9896"] = "df8d1afb-303d-5521-b854-b47906b97a2e",  -- HUM_F_ARM_Paladin_Oathbreaker_Platemail_Pants
+        ["94a4cbf4-39d7-5e7d-5429-bf6530cbb7b4"] = "20653a4d-4881-51ca-94b5-c6a3be3e861a",  -- HUM_F_ARM_PlateMail_A_Pants
+        ["92c2ecdc-30be-dde9-ed3f-0bf056394331"] = "fcbf9c34-baf8-5c7c-bed7-f411e39ec365",  -- HUM_F_ARM_Platemail_B_Body
+        ["11c721c2-e56f-ddd0-24f1-684ccceeee0a"] = "b3abd0f5-8501-5f90-9160-856256944754",  -- HUM_F_ARM_Ravengard_A_Body
+        ["006159ea-8880-6589-52ef-313fc228ee26"] = "f9b8ab0c-0bb1-5cde-bdf9-670ad52b990a",  -- HUM_F_ARM_RingMail_A_0_Body
+        ["f8f01df9-1fd5-f92d-a62d-432da17ba1a6"] = "ddadcb13-db2b-54e6-a0ba-b22abef8b96a",  -- HUM_F_ARM_RingMail_A_0_Skirt
+        ["d3482469-a43e-8de3-88f2-e5a8907c95d6"] = "f0b73209-3903-57fb-975f-af62287a43d1",  -- HUM_F_ARM_RingMail_A_1_Body
+        ["e86250ad-54b5-29a0-1383-321dfd77115c"] = "a623f0b0-c4c1-5bcc-80fa-3daf1a91487e",  -- HUM_F_ARM_RingMail_A_1_Skirt
+        ["9f06b0f7-1d68-85f0-3b4c-276fab55a1f9"] = "81072c13-fd67-5081-acb0-e8f991f641a1",  -- HUM_F_ARM_RingMail_A_2_Body
+        ["571adfc4-0033-449a-9be6-9602bdd35d04"] = "c417db88-8d41-5802-8802-b4d1db9cc05e",  -- HUM_F_ARM_RingMail_A_2_Skirt
+        ["9f847c1c-25bc-5417-942e-c78986e5071c"] = "2349081d-f4ee-5014-80bc-d6a57031308c",  -- HUM_F_ARM_RingMail_A_Pants
+        ["5b4c8f52-5336-6b43-96bf-7ae2cde81e1c"] = "2726716e-9b88-591d-b349-f4f159cdf765",  -- HUM_F_ARM_RingMail_B_Body
+        ["ad28b80d-799e-60f3-ecd8-8c8d64fdb28e"] = "fbdded19-35fb-5b05-ada6-377c3fe36ac0",  -- HUM_F_ARM_RingMail_B_Pants
+        ["a0e71abf-5235-6bbd-a52b-f1e898b7dfab"] = "e1e0a50a-3c4a-5bd7-bd07-3a0ab511e01f",  -- HUM_F_ARM_RingMail_B_Skirt
+        ["d27d9b6e-fa2f-34f1-c17a-94eb2b63a087"] = "8a0cdab7-02ef-5d96-9731-ab7923f427f5",  -- HUM_F_ARM_RingMail_C_Skirt
+        ["095be887-6b9d-c7c4-ea62-4ab6d0b513d6"] = "31e4fa28-0abd-55f1-b8e8-77eb8ca9358f",  -- HUM_F_ARM_Robe_Fire_A_Body
+        ["2c5d9266-8a99-7143-754c-fc2b57422c01"] = "92c9c75b-3fb7-5d41-b575-43be541c7076",  -- HUM_F_ARM_Robe_A_1_Body
+        ["78b1b1b1-1bba-0a46-8577-72c74903575d"] = "1e4ff416-0960-571e-8ccb-2e2e79427ab4",  -- HUM_F_ARM_Robe_Frost_A_Body
+        ["eecab0b0-f7bf-77c4-761f-c07325ea0c43"] = "7ac3618a-ad8c-5e9d-b692-3c0eca857c33",  -- HUM_F_ARM_Robe_A_Body_Satin
+        ["69649acf-f219-d2b9-8cba-d044263f00bb"] = "dca36d04-dd52-524f-8480-660d030330d8",  -- HUM_F_ARM_Robe_A_CloseQuarter
+        ["4084d9c1-de9e-bb68-f0bc-0395ad80357b"] = "0606bd9e-371f-5eed-9b1b-21751f450439",  -- HUM_F_ARM_Robe_A_Body
+        ["c4347cae-8638-4f27-d847-d848a587869f"] = "48e5f9cd-9092-5c60-bec1-067e07c7f5d0",  -- HUM_F_ARM_Robe_B_2_Body
+        ["fb2968d6-a8a5-571a-f803-8b91a2cd5346"] = "d6036f2b-1bb3-579e-8e88-6ef6f3bc7d34",  -- HUM_F_ARM_Robe_B_Body
+        ["11749113-6fe4-1593-6981-be73277484a8"] = "940b01a0-c1f0-5a6d-a17c-e5b3dd15192e",  -- HUM_F_ARM_Robe_B_Wizard_Body
+        ["324ccffb-b76c-ddf9-c133-058cbab4a5de"] = "27458460-a9e4-5dec-ac88-bccc26565486",  -- HUM_F_ARM_Robe_B_Undead_Body
+        ["2482f256-6050-4e01-2620-05c9525297aa"] = "b342c260-46d2-5f29-a3cb-ef363570a07d",  -- HUM_F_ARM_Robe_C_0_Body
+        ["26ff5e8a-4077-c579-c3ef-e1304554b3e1"] = "ee5297e3-053d-5403-aa69-7fbd52f89f59",  -- HUM_F_ARM_Robe_C_1_Body
+        ["55b92629-3026-3563-b3b5-df3d033efcb3"] = "1535cd21-29f0-5e0c-8b37-3593ddd42a88",  -- HUM_F_ARM_Robe_C_2_Body
+        ["04741d75-66f6-e766-18a8-2c07f326ca13"] = "1f0bdbbf-687c-55a2-a95d-17e05732a9cd",  -- HUM_F_ARM_Robe_C_3_Body
+        ["25a13ce8-126b-e0b8-44b4-133b2cfeeaf1"] = "416e43d6-a0c5-55ae-b976-ee6663cc05f3",  -- HUM_F_ARM_Robe_SpellResistance_Body
+        ["0aabb3a8-eed7-b19b-24da-5e9d82b266fd"] = "9ad64e5f-e015-5de1-bd42-9d2c21f26746",  -- HUM_F_ARM_Robe_D_Body
+        ["66dab175-f470-b1d7-60a8-1fe553f12ea7"] = "e14d68d8-639d-5f9c-a3e6-593349efef21",  -- HUM_F_ARM_Robe_E_Body
+        ["c9ed14a2-99f2-57c9-9542-c2867dec37ef"] = "3e64c40c-3625-5bf3-817b-25c3245fc244",  -- HUM_F_ARM_Robe_E_SpiderQueen_Body
+        ["7831d6c6-8324-1d9f-6909-96165a057ec4"] = "53df5e00-2768-5019-8fc3-96613f7fd060",  -- HUM_F_ARM_Robe_EndGame_A_Body
+        ["ff43d550-a7af-63a1-dd6e-731e525376e0"] = "b8755b0e-e5ab-5760-a178-6bc07bb1fc42",  -- HUM_F_ARM_Robe_Lorroakan_A_Body
+        ["96dab08a-eb0c-2ffe-6c36-7566ab78e346"] = "7c358563-2982-5ac7-8461-20368f316138",  -- HUM_F_ARM_Robe_Lorroakan_Body
+        ["1ae5d16d-de79-6e1d-331f-c11d75dbbaf5"] = "a65f215b-c041-58a9-8922-0c5be4bd1649",  -- HUM_F_ARM_Robe_Shar_Body_A
+        ["338fcd6b-71c1-a991-26a2-db02dee1a5af"] = "9d86d97d-bb74-50f1-a055-d7f735c1c9ea",  -- HUM_F_ARM_Robe_Shar_Body_Viconia
+        ["cd5de58b-6dd3-55c6-748e-ad71cad54c39"] = "c1b9763a-8fbf-50e5-8dec-bd8069fc7657",  -- HUM_F_ARM_Robe_Shar_Body_B
+        ["b6811b31-25f6-c4bc-5e93-ec0ab37a1677"] = "324dee40-acd6-5b47-984d-657741d83058",  -- HUM_F_ARM_Robe_Shar_Pants_A
+        ["209f6f56-54f8-d4e9-35af-70867c839c67"] = "df297608-dcd3-55d8-b8dd-55bf8a098b0a",  -- HUM_F_CLT_Camp_Shar_Pant
+        ["958458e2-45af-5996-a365-25d258c17a2b"] = "424566e0-3ce7-54c6-9fd3-851cba1bd6bf",  -- HUM_F_ARM_Camp_Citizen_Pants_B
+        ["f0c533e2-e10f-5fea-a143-065df33e6fa1"] = "29023a08-3d0a-573c-94bd-066812b4721c",  -- HUM_F_ARM_Robe_Shar_Pants_B
+        ["f62dfa70-6b63-feb1-3bae-059a77ded1ff"] = "864409c0-66f4-5600-aa86-492df38a6153",  -- HUM_F_ARM_Robe_Shar_Skirt
+        ["0fe2e1a1-da35-e2e8-5c87-d2ad15e24208"] = "5295a751-7f04-53bc-9cd3-ef1b40f9a6a5",  -- HUM_F_ARM_Robe_Umberlee_A_Body
+        ["b74bc9d1-2c02-7bc1-97e2-ba6b66d91db6"] = "ad296140-e728-5e35-82de-4d29b092f039",  -- HUM_F_ARM_Robe_Umberlee_A_Body_B
+        ["e3a982a7-113d-e13f-deef-97625f44d46a"] = "facc6991-3b86-5f96-b46f-dad7d5d0c32f",  -- HUM_F_ARM_Robe_Umberlee_A_Pants
+        ["2321fb4f-010e-495d-18c0-c2facb6f6241"] = "84aeacca-47de-5983-9255-ca8384867eaf",  -- HUM_F_ARM_Robe_Umberlee_B_Body
+        ["0fdaf2c1-cf92-f263-0048-56e93238a5cc"] = "20da1916-f8ab-5369-8a9b-cddccf1574bf",  -- HUM_F_ARM_Scalemail_A_0_Body
+        ["a6e89a85-dca1-816e-265d-eed5c5a54b96"] = "06eedb41-8324-567f-8ea1-7422635beabf",  -- HUM_F_ARM_Scalemail_A_1_Body
+        ["9d613fa9-9188-e036-5470-d590d3aca811"] = "982b1784-e09b-52d9-a86e-d3b12e548e05",  -- HUM_F_ARM_Scalemail_A_2_Body
+        ["4bdb8690-5acb-95da-abae-6b41a9fd4aa4"] = "23b7bf8f-8bfc-5b46-bc2d-3fd1560a3be1",  -- HUM_F_ARM_Scalemail_A_Pants_A
+        ["3fb3ab1c-786d-c5e0-f31f-8104cc8e377b"] = "7e55ba23-5593-595d-8d3e-60e2192d2693",  -- HUM_F_ARM_Scalemail_A_Pants_B
+        ["fe430473-6b87-a1e5-2f39-085b1942542f"] = "a15ada69-d371-5c91-9ee2-9fd77ac67957",  -- HUM_F_ARM_Scalemail_Adamantine_A_Body
+        ["623d949f-6b7d-05ba-d20f-c7633495eb24"] = "4cbe1682-3b86-51f2-9c5b-6225836486ef",  -- HUM_F_ARM_Scalemail_Adamantine_A_Pants
+        ["370b0a8d-ee6d-93aa-aca6-9ea018bbb4a7"] = "44909bc1-9307-58c3-8033-f49105f49840",  -- HUM_F_ARM_Scalemail_B_0_Body
+        ["17a8d09a-f6df-0187-aac6-be01f0089f65"] = "3eefde53-2b49-5525-ae83-631cd8ac06ae",  -- HUM_F_ARM_Scalemail_Paladin_OathOfDevotion_Body
+        ["fb901e95-3101-ff63-a628-e6d95c0a62e4"] = "86e374c1-5380-51c2-849e-612a42a87364",  -- HUM_F_ARM_Scalemail_Paladin_OathOfAncients_Body
+        ["97d65c4c-d6fa-bd7d-1a15-ca63a4bb1831"] = "39542d8d-81e1-5fb2-b1a7-89aed90e30d9",  -- HUM_F_ARM_Scalemail_Paladin_OathOfVengeance_Body
+        ["433b08ba-302c-2edf-1064-d0aae20eaf35"] = "aa750124-7fb1-5b28-af17-757cb8fd6942",  -- HUM_F_ARM_Society_Of_Brilliance_A_Body
+        ["12ae1e17-9cc8-6c8c-cf35-ff4a3bb0ecc0"] = "679e1252-13cf-5d66-8887-0f62bbea5886",  -- HUM_F_ARM_Splint_A_0_Body
+        ["e5eb5555-364d-16af-caea-8dd79c0d8945"] = "fa8883e7-bc50-5088-9052-e8e2d503503b",  -- HUM_F_ARM_Splint_A_1_Body
+        ["789678af-6c03-8bf5-f3df-afef3cb52dd4"] = "b5393358-d385-5a3f-a00b-7f3c3f7bda85",  -- HUM_F_ARM_Splint_A_1_Pants
+        ["53ab8b43-8c16-cfcf-a198-48c3dd856b48"] = "6b0b625d-e57c-514a-935d-2ea5407119ca",  -- HUM_F_ARM_Splint_A_2_Body
+        ["e8185a07-77c6-6cbc-1ec6-ab4ee246fbe6"] = "305743cb-5d9f-581f-9ce7-4dde809898d1",  -- HUM_F_ARM_Splint_A_2_Pants
+        ["ad128db4-9ce5-0a9b-d5a5-86692c87bcf2"] = "61b1aeea-3c1d-5ac2-8d2f-12e086c4005c",  -- HUM_F_ARM_Splint_Adamantine_Body
+        ["2141e5d9-dc21-ad0d-40dc-71e333819a26"] = "d4b73774-99e0-551e-b8ff-bca02b268b79",  -- HUM_F_ARM_Splint_Adamantine_Pants
+        ["bac9739c-6ed7-621c-fe61-009a44a7cf75"] = "2ed61d1e-a578-5e75-91a5-5f6ed87fe815",  -- HUM_F_ARM_StuddedLeather_A_0_Body
+        ["b3b87fc5-acda-80b8-2c26-9e797b99a7de"] = "96dbee5e-5bbc-5c2c-a1f5-2fd981c5f8d9",  -- HUM_F_ARM_StuddedLeather_A_0_Pants
+        ["9d67986d-21ae-401b-9837-ee4e003e1a5e"] = "7aac6a94-e5a3-5ce2-aa3b-301426c1c391",  -- HUM_F_ARM_StuddedLeather_A_1_Body
+        ["da8139a1-a58f-e2a1-62a4-bcf3bf409080"] = "6b3bcad8-4a93-5276-8b02-8f6c6be2597a",  -- HUM_F_ARM_StuddedLeather_A_1_Pants
+        ["eafe8199-bd10-0dca-ba1f-66b34fd1e363"] = "5917535a-1ba3-5427-8fc4-7c7b52c19871",  -- HUM_F_ARM_StuddedLeather_A_2_Pants
+        ["e8b7426f-669d-a781-9f3d-d006ffb031ac"] = "9555a589-7c6a-55e7-b138-50db56d262fc",  -- HUM_F_ARM_StuddedLeather_A_2_Body
+        ["d3151f1b-56af-bb04-6bba-c4c9b48104f8"] = "698ad833-3109-51f8-8b89-b8024c3776d1",  -- HUM_F_ARM_StuddedLeather_B_Body
+        ["d6d2f87a-e8dc-0102-7cd3-61d0922efff2"] = "e91a0786-2bd4-5e46-8da8-0cf25c1b2330",  -- HUM_F_ARM_StuddedLeather_C_Body
+        ["c403d4ba-9b22-ce02-7f87-71ea1628fb65"] = "b0b2ef56-8947-55e8-8939-607d93f8ea76",  -- HUM_F_ARM_StuddedLeather_Minsc_Body_A
+        ["1f0df787-f318-50ee-1ba3-db54078b310e"] = "5234f906-e35e-5564-8014-02e6c753d8a8",  -- HUM_F_CLT_Alfira_Skirt
+        ["a8f45b55-911e-a40a-e501-02022bb63a41"] = "8877178c-5d5a-555e-b85b-23a117d35b73",  -- HUM_F_CLT_Bard_Body_A_1
+        ["d6bafee0-4aee-5322-8a49-84179673cd96"] = "5052b5f4-de69-58d0-a763-e892271abfa8",  -- HUM_F_CLT_Bard_Body_A
+        ["7f3ec09b-8ade-1772-8fc5-822a43e4e991"] = "246b88c6-73b2-51ea-a545-964443ed0bf5",  -- HUM_F_CLT_Bard_Pants_A
+        ["befe91a5-3a8a-e604-ae8d-d4413759b38c"] = "576a46ad-75dc-5e96-8d22-834b0e388501",  -- HUM_F_CLT_Bard_Pants_A_1
+        ["ee42f623-c004-c1aa-dab1-7d86e8178895"] = "5e98ac91-4743-535a-ad3e-f5b52073e15c",  -- HUM_F_CLT_Bard_Skirt_A
+        ["0f4c63b4-df59-c729-156f-08cc9a3c8a00"] = "cc700c3d-d243-574d-8510-dcae67053702",  -- HUM_F_CLT_Blacksmith_Body
+        ["27d62490-3434-1ccc-35c8-59a8c73ad2ad"] = "fcee7b37-ccdb-5925-80a0-8875c97fc278",  -- HUM_F_CLT_Blacksmith_Pants
+        ["dc75dded-74b2-1b63-5ed4-8cfaacbaf80a"] = "1064bc04-5ea8-5ea6-8c91-6cd8a38646a3",  -- HUM_F_CLT_Camp_Deva_A_Body_A
+        ["435d32fc-9994-9f17-aa79-f76cb3ae300a"] = "4d3e5657-613a-51bc-aa1c-12c0d517f8af",  -- HUM_F_CLT_Camp_Halsin_Body
+        ["888a24d5-650d-d4a4-be6e-7b48828e69c4"] = "e060b9f2-82e9-507c-bac2-940fb336a410",  -- HUM_F_CLT_Camp_Jaheira_Body_A
+        ["dd7e1cf2-fab0-ca8f-980b-4e439ae31c9f"] = "fabcb5c3-6eb8-51b3-b88f-da39dc370adc",  -- HUM_F_CLT_Camp_Jaheira_Pants_A
+        ["dcd947da-9f4b-ab17-7112-c0c95a4dacfb"] = "c45b5cc7-81d6-5589-b60a-94c84c4b1714",  -- HUM_F_CLT_Camp_Karlach_A_Pants
+        ["611146cb-b98b-9ed1-78ee-1c24feee45d1"] = "c835c5bf-b2e9-5161-a151-262aa08245ee",  -- HUM_F_CLT_Camp_Minsc_Body
+        ["0fc38c91-a4a2-d9b6-da09-c1d55ab9a6b3"] = "e4569ee9-55be-5d2b-80a4-fff3c430577a",  -- HUM_F_CLT_Camp_Minsc_Body_Ragged
+        ["2c25ec83-c34c-2e15-d4ff-5cf35b0bb655"] = "82a489e9-5820-5cc3-8d5e-037fd2e4ea85",  -- HUM_F_CLT_Camp_Minsc_Pants_A
+        ["a85bb322-f3ee-fec9-06d7-cd3d8aacd25d"] = "153bc537-1dc9-5920-8271-4e1f68faac66",  -- HUM_F_CLT_Camp_Minsc_Pants_B
+        ["26ff17f0-8620-8c71-02b5-70c7977065d8"] = "1fa62727-7de9-5666-b822-48dcfc1e9d52",  -- HUM_F_CLT_Camp_Outfit_Astarion_Body
+        ["372f4870-d222-39b7-a801-4d226551175c"] = "76dec601-764a-55d4-84c6-9ec84e4d8a59",  -- HUM_F_CLT_Camp_Outfit_Laezel_Pants
+        ["99e0150f-659c-a90c-253a-b8529fdf2717"] = "0a042ae0-2b79-5ad0-8ce6-2c5b3fb024a3",  -- HUM_F_CLT_Camp_Shar_Body
+        ["2156b7db-04a6-ce24-559e-67bec253f4b5"] = "d05b80bb-891d-5638-afa4-5fda8cf17659",  -- HUM_F_CLT_Circus_Pants_C
+        ["0ccd9020-100d-5c2e-5dec-e1d279d906bb"] = "69f287b5-70dc-50d5-9f1e-cc92cbdc8a05",  -- HUM_F_CLT_Circus_Pants_D
+        ["d1774c69-1642-40df-f5f6-f027dec0f5f2"] = "b0592597-254d-5b80-9447-9b1502c9fdeb",  -- HUM_F_CLT_Circus_Pants_E
+        ["db5197fa-3e0c-90cb-b023-6a3f969eba2b"] = "c589281d-d8a4-5ec9-aaa3-b3f5e56728ef",  -- HUM_F_CLT_Corset_A
+        ["4093b106-0202-8695-3930-c8ef8abc2256"] = "aa9ef5dd-d5c9-5a08-8400-12f49d5fb5d8",  -- HUM_F_CLT_Corset_C
+        ["406bdd29-ef4e-c58a-bc1d-10863f1f5acc"] = "160245bc-073c-5818-968d-271954f9642d",  -- HUM_F_CLT_Corset_Courtesan_A
+        ["015d97e7-0cb8-6744-039f-e4f4f4fc828d"] = "cb7990e4-ef6e-52a2-af3c-8435781a6152",  -- HUM_F_CLT_Daisy_Dress_Gale_God
+        ["61782326-731c-e242-105b-bb81f9ba719e"] = "fa811211-6245-579f-a6b8-181aa7fc2bff",  -- HUM_F_CLT_Daisy_Dress_A
+        ["b7240d70-2bad-4d2f-3796-26686410a339"] = "dfe6a57c-70e4-5bea-aa79-1f1a9d0a0f6a",  -- HUM_F_CLT_Daisy_Dress_White_A
+        ["ff62821d-7630-0787-6d2f-0434ff48f27b"] = "d78b3999-a1f4-5c8e-a61f-0b0fa9a6b306",  -- HUM_F_CLT_Daisy_Dress_A_Accessories
+        ["27748f4d-ad84-964d-34b4-e46ff3257a4d"] = "b516d49f-3b60-50a6-aaaf-269aadcc2840",  -- HUM_F_CLT_Daisy_Dress_Accessories_Gale_God
+        ["941d5ebe-0409-fef6-28e1-d90ef3a31b52"] = "ce0e5640-6417-5258-b698-359e6a511543",  -- HUM_F_CLT_Daisy_Dress_Cape_Gale_God
+        ["b7c9aec9-bbe2-340a-82ad-a0fdc0394c82"] = "17372bee-7b10-58e6-9aff-4bf58b8de69d",  -- HUM_F_CLT_Daisy_Dress_Cape
+        ["870ca9d0-b98a-e0fe-6c45-6286c7b8cbea"] = "fcfb2494-7542-5d11-ad13-1dfc610437ae",  -- HUM_F_CLT_Doublet_Rich_C_Body
+        ["bdbb424a-131c-1a30-ce25-4584c7fd153e"] = "3165f644-9ca5-57f1-ad6f-0022cd3a0a3a",  -- HUM_F_CLT_Doublet_Rich_C_Body_1
+        ["30627639-4730-ab00-6160-3ec475cd35a9"] = "90c5bf4b-7c5f-5921-8e79-34d4baf58f27",  -- HUM_F_CLT_Doublet_Rich_C_Skirt_A
+        ["458f51b4-07b3-0678-8879-75ed4f79fc78"] = "833946ab-5201-52bd-b1c9-657fafa3e1f4",  -- HUM_F_CLT_Doublet_Rich_C_Skirt_A_1
+        ["d0e176ae-0389-66ac-5eda-3120e92752f8"] = "3cc2705f-38c8-51ee-a852-40bad2207644",  -- HUM_F_CLT_Doublet_Rich_C_Skirt_B_1
+        ["e241a911-80fd-a32b-58e9-be4194873eaf"] = "61d4f9cb-0cd8-5711-a7e2-94f9590cdfa1",  -- HUM_F_CLT_Doublet_Rich_C_Skirt_B
+        ["0461fcfa-910d-18a9-a1b3-b5b32eb4243c"] = "82c705a5-f887-50b0-aa67-1c1508ae1d59",  -- HUM_F_CLT_Drow_Body_A
+        ["feea0381-4abd-9c88-139a-fbdff203761c"] = "01f9fcfa-79dd-599e-98a8-f42debfc1d51",  -- HUM_F_CLT_Drow_Body_B
+        ["1ecc06a0-cc2f-a841-8ed3-ac5b7b90350a"] = "1cd2e312-507c-5b7a-a5b8-f8fb33c30b57",  -- HUM_F_CLT_Humans_Pants_A
+        ["7b247806-5fe3-8fa7-2733-d0d2486e55e0"] = "1fd0d2e3-f7c1-5e43-b2a5-d04cb0fc14c4",  -- HUM_F_CLT_Humans_Pants_A2
+        ["3c3c6f48-c2b0-17f5-0f96-fade875b8b03"] = "e960ca79-8bbf-55cb-97f4-c48bcf1d6853",  -- HUM_F_CLT_MiddleClass_Body_A_0
+        ["b6a9e089-b4d1-58a7-59a7-21a63ec1e3dc"] = "135dbb1f-7167-5209-afad-ceb69decba26",  -- HUM_F_CLT_MiddleClass_Body_A_1
+        ["d94b896f-5e09-f0aa-c158-1496fa2cd809"] = "490ffcd0-4197-5d5d-bee8-0ca894bdb379",  -- HUM_F_CLT_MiddleClass_Body_A_2
+        ["988f7d2e-a2f9-0be5-70d6-8e2852fb565e"] = "12181046-492e-5866-9798-1d7e6a559446",  -- HUM_F_CLT_MiddleClass_Body_B
+        ["f0fa5d54-87bc-cd18-fb3f-52559917ab28"] = "9f6274db-f9bf-5bf3-947a-01c20209cbe5",  -- HUM_F_CLT_EPI_MiddleClass_Body_B
+        ["6ab2470f-4430-f08e-c20d-1b44a1671d71"] = "ae9e62d4-3f7f-52b3-b68f-00f237e1be8d",  -- HUM_F_CLT_MiddleClass_Body_C
+        ["5299aedc-02ac-40cb-906b-c2144e3543e8"] = "79e30800-ccd0-5c8a-b2c8-d3ca08aa4a52",  -- HUM_F_CLT_Mizora_Body_A
+        ["056e67fb-7722-4e59-9e1c-b75180177509"] = "1003ac67-7e9f-52c0-88b3-c9e16f36ee3b",  -- HUM_F_CLT_Nymph_Dress
+        ["b0cde6e3-83bb-62e3-4c9b-c0ee256fc951"] = "d045a4b4-44c8-55bc-bd16-7b018cf895b4",  -- HUM_F_CLT_Pants_A
+        ["037f2658-0f94-a1f3-6162-3ab3ef46ef9f"] = "54c362e6-c039-5dcb-a182-60f3d3f8f06d",  -- HUM_F_CLT_Pants_Torn_A
+        ["437ba6c8-16f3-a51d-d33f-496b886e7377"] = "cc304980-1a94-52cb-8bab-85e66ce35f79",  -- HUM_F_CLT_Pants_B
+        ["9ac53050-ed2f-32e2-361f-2ac4a849247c"] = "53bcdbed-54a9-5c88-9ecd-4171eeeca79c",  -- HUM_F_CLT_Pants_C
+        ["814be387-c446-a05e-1ab8-c1a22bfbfb88"] = "b0610ea8-69b7-5ed1-84ab-b07b33069477",  -- HUM_F_CLT_Pants_Torn_C
+        ["6ac9cad5-111e-33ff-3eda-ecffc3f8977d"] = "1b026cdf-d42d-5458-b752-bb97599b161b",  -- HUM_F_CLT_Pants_Courtesan_A
+        ["2d0f8f38-2383-125f-eb37-02d0916958d1"] = "7e8401be-0483-5203-b3c0-56df9fd46cfb",  -- HUM_F_CLT_Pants_D
+        ["8dbbdbea-3435-d58f-00e5-ffc390e1f1d8"] = "a4f2a60d-bf74-5047-8cee-af268850e87e",  -- HUM_F_CLT_Pants_E
+        ["ac0d8966-439e-890c-c363-4cc3a06673a8"] = "6fc251ee-8ec5-589a-b0d0-25e88b66a4c3",  -- HUM_F_CLT_Pants_F
+        ["ddded88b-7eae-8063-c28b-29747f85b921"] = "962df85e-c69e-5a50-98dc-b01622f9c2cd",  -- HUM_F_CLT_Pants_G
+        ["073bcd0e-0fca-bc1a-6abc-2cb9f94d8ec6"] = "e01af2bd-8836-5d0e-b281-83f21792c7d4",  -- HUM_F_CLT_Pants_Torn_G
+        ["680e2bc4-eb37-2dbd-955e-ae510a4e1743"] = "bc62a95b-e113-5975-9282-b70bb22c3fd4",  -- HUM_F_CLT_Pants_H_Twitch
+        ["9c9e4cb9-e1b2-ebce-e984-4324f4c9b69c"] = "3c4e8d60-67e0-54b8-96a9-55de7b0c5d1f",  -- HUM_F_CLT_Pants_H
+        ["8f8751f9-bb4d-6e95-1883-567ef89578aa"] = "9eb2004a-64de-5990-bd47-a093e13ec9fe",  -- HUM_F_CLT_Pants_H_Short
+        ["9bb0a1f0-3db4-314e-5725-d1c7f3e30557"] = "5300c16a-ea43-582d-bd38-136125018c88",  -- HUM_F_CLT_Refugees_Corset_A
+        ["410a4505-7032-e0f3-3825-96e5bca7352c"] = "dce8938b-74cb-5581-b8f5-a4627d831c19",  -- HUM_F_CLT_Refugees_Corset_B
+        ["38ab17d2-15d3-252f-d0ec-3866011c31cc"] = "bb0794ef-b3b2-5d28-98f5-170e472c813b",  -- HUM_F_CLT_Refugees_Pants
+        ["93d267af-f36e-8383-5d22-4b95bf38f321"] = "14453e50-d676-5f54-8475-845d0f66b6ae",  -- HUM_F_CLT_Refugees_Pants_Torn
+        ["4d196657-a569-7e5e-b883-adb32bf7c17a"] = "cf97d0f7-1ade-5f1d-93f9-c9280b33c1ce",  -- HUM_F_CLT_Refugees_Skirt_A
+        ["ac711a8a-3264-13f8-3d4f-39cc454ec168"] = "e0a7e0b9-cc11-57af-bc41-e724b12e360b",  -- HUM_F_CLT_Refugees_Skirt_B
+        ["c129ed42-df0f-1f7b-098a-d9e5b425b7b7"] = "3017f316-3d8b-5099-8bb4-8d1bdb71ba05",  -- HUM_F_CLT_Refugees_Skirt_C
+        ["7dccd203-9d87-f011-b48b-095c94a802c7"] = "1c9c2cb3-d3d2-551d-8e1c-17738fec50af",  -- HUM_F_CLT_Rich_F_Body
+        ["997602e8-8406-46d1-5bb3-800c5478a46b"] = "499b9e34-6785-5785-8492-2a4b8a9b3186",  -- HUM_F_CLT_Rich_D_Body
+        ["d68214cf-e2bf-f120-9ef3-1f850a9246b5"] = "559d233b-8e85-52c6-b081-4a86de4832e1",  -- HUM_F_CLT_Rich_E_Body
+        ["025db7fc-0c5b-5072-e988-9880c7010a7f"] = "6054e102-fb0f-5b89-b689-45e7fe7a9133",  -- HUM_F_CLT_Rich_D_Pants
+        ["e2e0e9e3-8082-07aa-0284-930015839327"] = "4fa3e7af-f0d9-509c-9535-fef61fda2512",  -- HUM_F_CLT_Rich_F_Pants
+        ["d3c152cc-56e3-4561-4321-518f6f21546c"] = "a6b9fd31-e7ef-5420-a835-33366e97920b",  -- HUM_F_CLT_Rich_Dress_A_Body
+        ["15d6efbf-1aae-0dcd-bcfc-834a86c9e011"] = "9faa2ef0-eb70-52f6-a770-93bfc12ab41c",  -- HUM_F_CLT_Rich_Dress_A_Body_2
+        ["c92f9f3c-712f-8c7f-6a0d-4d4516fd0737"] = "18e9e6d5-20e8-505b-bdbe-669ee6c8ea53",  -- HUM_F_CLT_Rich_Dress_A_Body_3
+        ["b1ac04ac-8d6e-8733-889e-52278f7bd5ef"] = "df12491b-9b2f-5b85-9ccf-026f0316f4bb",  -- HUM_F_CLT_Rich_Dress_B
+        ["b925d640-eb8e-9ef6-7561-2c1db074df4f"] = "4f66e00e-50ec-590c-b2cc-dda9be65d0fd",  -- HUM_F_CLT_Rich_Dress_B_Accessories
+        ["4aa3396b-85b4-ccfc-055d-c45a2b9ffcb8"] = "eb307c6a-27db-5703-9154-81520f21e6a0",  -- HUM_F_CLT_Rich_Dress_B_Shirt
+        ["a1fc20ac-2abc-8f45-6435-f6f7b98f4a19"] = "bd160a29-fd21-51db-9e3a-94d1be949ace",  -- HUM_F_CLT_Rich_Pants_A
+        ["e84b91c8-6d62-d46f-8a1a-0b87191f62dc"] = "8a4f5046-0ade-5460-b02e-d7946a3f7a0d",  -- HUM_F_CLT_Rich_Shirt_A_Pants
+        ["927cfa94-1fb6-3a04-0db5-11195fb37ae3"] = "12a88589-c46e-5302-ae38-9a175e7305cd",  -- HUM_F_CLT_Circus_Pants_B
+        ["dab58757-2da5-f75c-5e35-396a5b4f3be4"] = "bb104d09-05c8-5d09-9bc7-5d9323393a6d",  -- HUM_F_CLT_Rich_Shirt_A_Body
+        ["5c046b60-41a2-28b2-eea3-7267b7ce52e5"] = "66fedf75-fd75-5ee5-9400-3d1683989548",  -- HUM_F_CLT_Circus_Dress_A
+        ["8b02460a-147e-9e0a-02c6-4df064e68c09"] = "f1201a12-4c11-576e-a645-66fa1ca3ae43",  -- HUM_F_CLT_Shirt_Courtesan_A_Corset_A
+        ["678cb240-d96f-5bbb-29ce-39d9d32de01f"] = "b29d2a97-2a56-5dbb-afa2-fb98ecc52e15",  -- HUM_F_CLT_Shirt_Courtesan_A_Corset_B
+        ["d4badd19-dde6-ebb1-810f-8c7cf1c73a27"] = "ddcb8d80-7d65-5224-8570-8e99694dc9c3",  -- HUM_F_CLT_Shirt_Courtesan_A_Corset_E
+        ["bf06fc6a-82f0-a561-d26b-9023042beacd"] = "cb6fdaed-751c-5c05-af78-245e9e3f7791",  -- HUM_F_CLT_Shirt_Courtesan_A_Corset_Twitch
+        ["f4cd5679-9a06-30ae-c8b5-97dcccf7896f"] = "6125498b-8c8c-58b0-ab6d-580ff3ee726a",  -- HUM_F_CLT_Shirt_D_Corset_B
+        ["f89199e3-6801-a4ef-32dc-11c1d7521ddf"] = "c6d403df-314a-5607-811b-76a4c08267e1",  -- HUM_F_CLT_Shirt_D_Corset_Alfira
+        ["f994d29a-7e3e-dbc2-e577-99b6869c413b"] = "9cd3a613-754a-5f79-a9ea-145f15185c6f",  -- HUM_F_CLT_Shirt_H_Corset_B
+        ["c4f40a4a-5e87-eb9c-da5e-d268f1761083"] = "8f2f0361-a3d7-5a23-aff2-9c5d607e798e",  -- HUM_F_CLT_Shirt_H_Corset_E
+        ["898a98d7-9100-d842-68e6-093d201ac6f8"] = "834f1526-96de-5c77-b4a9-c3b5debad893",  -- HUM_F_CLT_Skirt_A
+        ["ecf67d32-6eb7-b67d-a7bd-847367f24e8b"] = "27c40a70-6d7e-53b0-9fe0-8e48fed81203",  -- HUM_F_CLT_Skirt_A_Spring
+        ["05986d42-16ec-c7b6-c1ed-0bd21d03df83"] = "5ed59016-b454-5d60-9713-6724ca5faf4d",  -- HUM_F_CLT_Skirt_B
+        ["4018e880-fb09-b84c-85dd-f8701eee1bbb"] = "1ec8f5d1-2cbc-54d9-8245-8b5d5a52c3c4",  -- HUM_F_CLT_Skirt_B_Mayrina
+        ["1039260c-c726-ed05-8785-6ead6bb7b3b0"] = "ca11164a-5a71-5517-a71e-3143f8dab48d",  -- HUM_F_CLT_Skirt_C
+        ["5e4726c4-048d-b195-9e9e-dd983d5016b0"] = "66088d90-0107-556f-a44c-d441315865bd",  -- HUM_F_CLT_Skirt_Courtesan_A
+        ["13297b57-278a-4b8b-f469-859ebff773a7"] = "36d2c278-6966-5aee-b6b8-8a6b7e2553a4",  -- HUM_F_CLT_Skirt_Courtesan_B
+        ["c0968035-1291-f945-bd4b-3b0514e52bff"] = "09361871-bd6e-5d79-b980-a1391c55fd8e",  -- HUM_F_CLT_Torn_Body_A
+        ["11634ec6-d3fe-1a2b-5ffb-85dcda9a48f6"] = "bdaf2219-41b1-56ad-be37-1390580f20ab",  -- HUM_F_CLT_Worker_Body
+        ["dda05feb-d0ab-4399-a0e7-34b5213bd4a3"] = "b7b3840c-6dab-596d-acd3-c0c56b7e2749",  -- HUM_F_CLT_Worker_Pants
+        ["e073aabb-ce90-3e7a-a59f-79f36b40dfb6"] = "41cadde8-2366-5683-970b-84dfed8d6f78",  -- HUM_F_Nurse_A_Legs_Bandages
+        ["89bc4da1-7904-faca-aadd-d30ee6e33ee1"] = "bae10ee5-1860-550d-8fc8-609eb8a27b12",  -- HUM_F_ARM_Nightsong_A_Body_OLD
+        -- CLASS1 (W-B1, 2026-07-26): BCBPak redefines these vanilla VRs in place;
+        -- these are clean-vanilla clones (SourceFile = Larian's own GR2).
+        -- CONFIRMED IN-GAME by !cm_visdump, vanilla mode, BCBPak installed:
+        --   att[5] VR=6682ffad-... src=.../Generated/Public/BCBPak/.../HUM_F_CLT_Camp_Shirt_A.GR2
+        -- while body and trousers (which HAVE refit entries) both tracked the mode.
+        -- Gated on BCBPak presence via BASE_VANILLA, which snapshots this whole
+        -- subtable at load (see :1464). There is no CLASS1_KEYS set -- REV 2 of
+        -- _apply_class1_to_lua.py dropped it as redundant.
+        -- vanilla ONLY. sbbf is affected by the same passthrough but fixing it
+        -- needs 77 deformed meshes -- deferred to v1.3 (Alan, 2026-07-26).
+        ["9fd5fd68-bcae-5be6-3232-062490e3c488"] = "f5c15c6d-be04-5394-8da1-2e07bc892473",  -- HUM_F_ARM_Astarion_Shirt
+        ["c6253618-9059-e04c-0833-735bd172184e"] = "9fc60a94-9719-5c0b-8cd0-9cc54ce36e63",  -- HUM_F_ARM_Bandit_D_Jacket
+        ["9ecefef0-cf8c-87a3-d2ca-62606e1a3f32"] = "7acbede7-3e79-5cf6-95d7-17e8d50f4276",  -- HUM_F_ARM_BarbarianMagical_A_Belt
+        ["3f7cef8d-f5fc-4b8a-21dc-4f34d002a88b"] = "d8be7656-f757-5f2e-955a-3417c80ff23b",  -- HUM_F_ARM_Bard_Sleeves
+        ["443780e8-54a1-5d21-a9e2-fb651ccc173d"] = "c18211ca-418f-57fd-ae0e-9dfc05626bf2",  -- HUM_F_ARM_Bhaal_A_Waist
+        ["607f5d1c-57b2-3e0e-fd13-64909a094752"] = "9c90c761-a623-5252-9898-b6aaefe367b2",  -- HUM_F_ARM_ChainShirt_Shadowheart_A_Sleeves_A
+        ["d04cf0d3-e776-852c-afa8-dc9d191578c4"] = "bdff610d-6279-5579-a4d6-971823802cca",  -- HUM_F_ARM_ChainShirt_Shadowheart_A_Sleeves_B
+        ["3e79df3a-b55b-f4bb-c84d-213b3d28c082"] = "bb28c43c-0e09-5809-8249-baa17428cb76",  -- HUM_F_ARM_Cloth_Magic_A_Bandage
+        ["f65f5c50-677b-0da7-e7f8-4496f2585401"] = "bf910484-82b1-5131-a387-78625fcddf26",  -- HUM_F_ARM_Cloth_Magic_A_Pieces
+        ["60e61fbf-0b59-555a-5269-a72376c980cd"] = "9aed2c31-b817-57bc-921b-af5325dc1bf3",  -- HUM_F_ARM_Cult_Absolute_Tabard_A
+        ["34b36570-b019-3cef-1729-6398e05ac7ee"] = "d97e17bc-6ae9-5d39-b215-525d54d9f53d",  -- HUM_F_ARM_FlamingFist_HalfPlate_A_0_Tabard
+        ["633022b3-d96a-70e8-20c1-538de72db7e1"] = "4eb5439e-64df-5cdd-aa17-3d7945dd6142",  -- HUM_F_ARM_FlamingFist_HalfPlate_Marcus_Tabard
+        ["f1fb6cd4-e35b-d4c3-06d7-64e28ccb4c0e"] = "a2ddfc83-d344-5e0c-8f60-3e8bae5d26e8",  -- HUM_F_ARM_FlamingFist_Leather_Sleeves
+        ["d7295df4-bc18-0d50-397f-2547f2997741"] = "c0c6ec39-2839-5880-b2df-a183861bca16",  -- HUM_F_ARM_Jaheira_Robe
+        -- [MOONSHADOW FIX 2026-07-27] removed from class-1: these Leather_A sleeve pieces belong to multi-piece
+        -- outfits (Moonshadow Armor Alt); the vanilla clone mixed proportions with the BCB-refit body/pants,
+        -- and BCBPak's own override for 84195a60 is an EMPTY mesh -> missing piece. Restored to passthrough
+        -- (pre-v4.16 tested baseline). 84195a60 = Alan-confirmed regression; 54bc906f = its sibling sleeves.
+        -- ["54bc906f-60ae-8ee5-2ac8-1a25117ff4e7"] = "d82a9591-d45c-52c6-93a1-6617117efb3a",  -- HUM_F_ARM_Leather_A_2_Sleeves
+        -- ["84195a60-f6e8-fa8f-bb53-1c3599d0954c"] = "b5e15e03-13b2-5989-94a7-cab17c33d791",  -- HUM_F_ARM_Leather_A_Sleeves
+        ["366af0d3-dd14-89bb-0474-80a6b884638f"] = "920c65d6-5748-564f-b6d0-8bfba997ca87",  -- HUM_F_ARM_Orin_Jewelry_Player
+        ["52495c86-346a-6954-b6f2-578208bd5637"] = "ba073f55-dca6-52aa-8432-325d3a854bb0",  -- HUM_F_ARM_Robe_C_UnderShirt
+        ["b4348095-0191-8bf0-cd0e-e210993674b6"] = "cb227097-41c1-5f72-9017-941e7962028b",  -- HUM_F_ARM_Robe_Umberlee_A_Accessories_B
+        ["947458d6-da8d-b629-4f77-111581b2712f"] = "f2c21ead-bcc1-55b0-86a5-428d5a85cff1",  -- HUM_F_ARM_Robe_Umberlee_A_Accessories_C
+        ["71eff4ac-87d0-e559-f4ca-a76a7597fcb9"] = "583ff967-dfb4-5ad0-bf4d-1d4237375221",  -- HUM_F_ARM_Robe_Umberlee_A_Shoulderpads_A
+        ["3eae5046-b712-e68c-2168-d16012c2bda1"] = "d4509f13-346c-577d-a389-7daeaade272f",  -- HUM_F_ARM_Robe_Umberlee_A_Underwear_A
+        -- [MOONSHADOW FIX 2026-07-27] removed from class-1 (tested-family item that rendered fine pre-remap;
+        -- remapping changed a look that already passed). Restored to passthrough.
+        -- ["238f0743-6fcd-f788-358f-c892160b3e68"] = "cce433d6-2153-5313-a147-074fb5dd0b34",  -- HUM_F_ARM_StuddedLeather_A_1_Body1
+        ["4c6a422a-6512-fa86-658c-30e99406f943"] = "a17d5a34-eb88-55d3-88ac-800f82fc8bff",  -- HUM_F_CLT_Camp_Citizen_Shirt_B
+        ["6682ffad-1f04-3e05-660f-6d20c8c3772c"] = "de927ecd-7801-5932-adb4-dab9e73a43b8",  -- HUM_F_CLT_Camp_Shirt_A
+        ["7d2ea148-347c-d31a-2f54-2e4ea0401b6a"] = "321750d8-67b6-57fd-b90f-43c6c53ce621",  -- HUM_F_CLT_Camp_Shirt_B
+        ["76879699-6811-451d-316b-d67a8824fc98"] = "348dabd4-8c7f-5ed7-a508-5574aaee0013",  -- HUM_F_CLT_Camp_Shirt_C
+        ["d600fd55-1a80-25fd-98d4-aaddfdb3b90d"] = "bc75a14a-8741-5dfe-bc8e-317c29df1f41",  -- HUM_F_CLT_Camp_Shirt_D
+        ["9bdc9e17-7f4d-d3ff-1e29-04c93d39bdb1"] = "a55927cd-ce0d-5274-852b-ddd3209fe94a",  -- HUM_F_CLT_Camp_Shirt_E
+        ["31428c0b-7f8b-a6e1-3272-558b2ffd7a83"] = "59464617-e5b0-5eb7-a22b-d833907b35aa",  -- HUM_F_CLT_Circus_Jacket_A
+        ["48d6a6c4-0570-2436-492a-f93c8e787d01"] = "10404827-7d63-5f0b-a77b-638df2ddef90",  -- HUM_F_CLT_Circus_Shirt_A
+        ["48375b27-db2a-cd01-9de1-4245a3811a07"] = "27f4d390-88e9-52d8-b165-a4df2c4dc926",  -- HUM_F_CLT_Circus_Shirt_B
+        ["3f331b5d-6ec3-2600-1e3b-d5746a88af7d"] = "bf498a6c-e095-5a53-8d06-a87745f64aae",  -- HUM_F_CLT_Circus_Shirt_B_1
+        ["89fc2d48-e474-e859-5fa2-f3f47c35962d"] = "4cfd1700-1cd0-5063-abb3-93fcc7f1e72e",  -- HUM_F_CLT_Circus_Shirt_C
+        ["9e81a487-2468-347d-9d7e-ee35282448f8"] = "967596e8-d325-5bdd-ba25-19a7d15778b0",  -- HUM_F_CLT_Circus_Shirt_J
+        ["f62105ae-2388-54c6-e834-31f490df7b49"] = "c373a960-7001-563b-b4c0-22399741e5e9",  -- HUM_F_CLT_Circus_Shirt_K
+        ["d4fd883c-1370-e111-736e-67dfbab7139f"] = "946a41d7-5f8c-548a-8d82-9d4b9c0d7b8d",  -- HUM_F_CLT_Daisy_Playsuit_A
+        ["edf95138-e356-5a4f-3a2d-e2cbc07c33c0"] = "0734d752-1fb3-5fa9-9450-e4574200564a",  -- HUM_F_CLT_Doublet_A
+        ["66de53c5-2170-c8c2-9061-a411d5e256ea"] = "c184b665-d8ed-5658-96db-01ddcb6b9b0a",  -- HUM_F_CLT_Doublet_Rich_A
+        ["66fe0115-ae82-854c-6501-b32c4032c448"] = "722dfc58-1e4a-5911-9272-1bf395a1cedf",  -- HUM_F_CLT_Doublet_Rich_B
+        ["737e78a2-3317-8d01-48a8-0a6ba0a8fb3c"] = "5dc4566f-29b3-51a2-9ded-10069340b47e",  -- HUM_F_CLT_Doublet_Torn_A
+        ["8b303896-afc6-36b0-d25a-70e8cbd0cd7f"] = "fa5cc8b2-edc4-5f0c-911e-0180436e0f6c",  -- HUM_F_CLT_Humans_Shirt_A
+        ["73c1e8f2-a765-eab5-011f-350a7f2ef33b"] = "ad1dc308-30b6-52ba-9edb-df9bf195e720",  -- HUM_F_CLT_Humans_Shirt_A2
+        ["13c6fa13-ef7c-df18-b462-ad880d7233c8"] = "87ec4271-eb84-5e5d-8886-43660078dff9",  -- HUM_F_CLT_Jacket_A
+        ["2e42d72a-e2e4-f081-9b6f-afa5f827366f"] = "98f073fb-590e-5544-9340-ed9b1f7595ca",  -- HUM_F_CLT_Jacket_C
+        ["34a5b970-a7c0-b622-b4f5-9ff960cfb059"] = "54720f2f-faa9-5949-aa4d-a0332657c11f",  -- HUM_F_CLT_Jacket_D
+        ["c23faa1e-05da-6685-f1f0-b064946f9d7d"] = "069cd10b-b8a6-512b-b4e8-e5da8adbbd68",  -- HUM_F_CLT_Jacket_E
+        ["2987b0a2-c428-ecff-1280-26ab0cf47d83"] = "5549fa09-9736-554b-86b9-21ff34f2cd9b",  -- HUM_F_CLT_Jacket_E2
+        ["84fb4180-3407-f5d5-3d77-c80f3125dddf"] = "d31c726e-6de5-5492-9238-53e90fa9b088",  -- HUM_F_CLT_Jacket_Torn_A
+        ["01e718e9-8992-312f-dc73-082846ac972e"] = "589a9ff4-0f58-5226-9941-4ca6a4cbbde9",  -- HUM_F_CLT_Refugees_Jacket
+        ["20e07fc7-8550-069f-7271-db030aec1a3c"] = "7f381d1a-89d8-538f-a6da-888cc4d9c2af",  -- HUM_F_CLT_Refugees_Shirt_A
+        ["a5512e5f-3b52-2c29-d19d-fe6465c5819e"] = "45e738c0-e063-5939-a291-8f0d9e82fee6",  -- HUM_F_CLT_Refugees_Shirt_A_1
+        ["94e1c917-9b46-afa4-6733-e0daff97ae98"] = "f403972a-59d1-59bc-9164-de026eb5827a",  -- HUM_F_CLT_Refugees_Shirt_B
+        ["436e0c5c-826b-5686-d6f0-b98503bf5a8d"] = "0a967ecf-38b6-5c9c-8cbc-38cb7d727a05",  -- HUM_F_CLT_Rich_Shirt_A_Trim_A
+        ["cf140f3e-d8aa-137c-659d-047f0fe80de3"] = "3720af2d-102e-5731-ac77-0f30c0741dea",  -- HUM_F_CLT_Rich_Shirt_A_Trim_B
+        ["8f6c726e-0264-e29e-4924-3982682de64b"] = "3b3d2215-3772-5e01-a9ef-c767965af9ba",  -- HUM_F_CLT_Robe_Ilmater
+        ["f156291e-fcf6-ff37-9e89-cd83abf3cc15"] = "5e7b9f1a-a342-5dfe-8752-557bc0be60e3",  -- HUM_F_CLT_Shirt_A
+        ["c1e76ac0-21f2-4e6b-265e-5ca4ed03ca27"] = "583ce5f6-0ede-5e4a-8880-afac9aa00bc5",  -- HUM_F_CLT_Shirt_B
+        ["00795a8a-3e73-036c-6d43-72560a9c403b"] = "bf655236-1507-5935-b5b2-40184196574c",  -- HUM_F_CLT_Shirt_C
+        ["fa7e57fe-59b7-5e83-4dbc-8359db5b931f"] = "b28927c1-8867-50b1-b4ea-595573d58037",  -- HUM_F_CLT_Shirt_C_1
+        ["0ed30320-35a1-2e07-c94b-e1ad0b908f99"] = "f6444cd6-6624-5190-ab1f-128f3a4da907",  -- HUM_F_CLT_Shirt_Cook_A
+        ["f37a4733-de54-2fb5-5faf-bc3249f07bfc"] = "1b07cadf-45bd-5a45-ad09-bbeab38da895",  -- HUM_F_CLT_Shirt_Cook_Torn_A
+        ["ef4f61fc-224e-22fe-7e3c-a9eae4c08e94"] = "072f4aa3-ee42-57f6-b9c7-37d213a7e168",  -- HUM_F_CLT_Shirt_Courtesan_A
+        ["bd02a60a-3bae-98e2-435f-60c1580c2a90"] = "9264fa72-72f0-5cc1-b639-2eacc93fb91f",  -- HUM_F_CLT_Shirt_D
+        ["9a04af56-0092-cc5b-8940-6c848b7da5d0"] = "0db935e2-7be8-5872-9fd0-7f07570264ed",  -- HUM_F_CLT_Shirt_E
+        ["bef59a75-5a3e-b4a0-77f5-3116910ca944"] = "03d49071-fa2f-5b47-bd73-e14b2ff8f55a",  -- HUM_F_CLT_Shirt_F
+        ["f5d3d9f0-fb61-e7ec-a278-930ea7c286a4"] = "f64b7f72-828b-5354-ba90-8ef33c5d86ba",  -- HUM_F_CLT_Shirt_G
+        ["f6e56693-8397-db61-0b70-4b7d072b3896"] = "94ff070e-f952-5431-bfb7-24af4283899c",  -- HUM_F_CLT_Shirt_H
+        ["ba08fa53-4972-772a-48aa-cca2bd93c39d"] = "ffa2e316-0629-5f60-9f5b-2aafecd6ed2b",  -- HUM_F_CLT_Shirt_I
+        ["ad195e3f-8399-f77a-b999-a1ca70f1040d"] = "54c5320c-c42d-5794-b5f1-3076b587007c",  -- HUM_F_CLT_Shirt_J
+        ["1a6ded21-70a7-a64d-8a3e-bd2b4118849e"] = "e5d58541-aba8-5086-8324-eed4bf0cb0ed",  -- HUM_F_CLT_Shirt_Torn_A
+        ["da9cba7e-1246-c328-06cb-e92d76f236eb"] = "81989ecf-ba22-532a-814c-04f888361a11",  -- HUM_F_CLT_Shirt_Torn_C
+        ["d5336987-990f-4544-a9dd-303cda4aa035"] = "d5f8948b-e242-5a90-aa0c-7061327a1d73",  -- HUM_F_CLT_Tunic_A
+        ["f9c1a759-87f1-900f-0111-e628bdea4da4"] = "94e96cc4-6e80-5655-b074-611e63a22921",  -- HUM_F_CLT_Tunic_B
+        ["24f998e5-2341-c834-e104-f99619c89d78"] = "5d028b3a-9a83-5163-91c2-52c11487ce09",  -- HUM_F_CLT_Tunic_C
+        ["c1ddf743-5f23-acfc-62e1-049e61b43ec3"] = "6370dc07-ee9c-52d7-b159-2d7d9650c892",  -- HUM_F_CLT_Tunic_D
+        ["9096cac7-7d3e-917d-47ca-5cd6998c0886"] = "b7703829-5ee2-563b-94b9-5a2d1c3ed002",  -- HUM_F_CLT_Tunic_Torn_C
+    },
     sbbf = {
         ["02964f77-c398-423b-a5e9-f7810243811c"] = "7a9547fe-98e0-5256-bbc1-557f76e50aaf", -- HUM_F_ARM_Adventurer_Body_A [GLB]
         ["ed8e5366-bfa5-91c4-9eae-9ef39f402214"] = "bf9c1d6d-cc14-57d6-95ec-179e95ea1d07", -- HUM_F_ARM_Astarion_Body [GLB]
@@ -920,6 +1423,135 @@ M.REFIT_BY_VR = {
 }
 
 -- ---------------------------------------------------------------------------
+-- BCBPak PRESENCE GATE (2026-07-26, Alan's rule: "changes related to BCBPak
+-- should be made ONLY if BCBPak is present; no other part of the mod affected").
+--
+-- GATED: the BASE entries of the `vanilla` subtable, and nothing else.
+-- Those clean-vanilla clones exist for one reason -- BCBPak REDEFINES vanilla
+-- VisualResource nodes IN PLACE (same GUID, SourceFile re-pointed at
+-- Generated/Public/BCBPak/...). Our clones carry a fresh GUID and Larian's own
+-- SourceFile, so they win and the user sees vanilla. With BCBPak ABSENT there is
+-- nothing to defeat: the remap becomes a no-op that still substitutes our clone
+-- GUIDs for Larian's and -- the real hazard -- would equally defeat ANY OTHER
+-- mod that redefines the same VR node. The 77 class-1 additions widen that
+-- surface onto common civilian clothes (Shirt_A-J, Tunic_A-D, Doublet_*,
+-- Jacket_*, Camp_Shirt_A-E, Camp_Citizen_Shirt_B, Circus_*) -- exactly what
+-- clothing replacers target.
+-- (Corrected 2026-07-26: the count is 77, not 81 -- `refit_by_vr_class1.json`
+-- "count": 77 and 77 V12_INCLUDE rows in CLASS1_vanilla_gap_2026-07-26.tsv.
+-- "BASE_Vanity_Body" was named here in error: that string appears in NO source
+-- file, roster, or bank in this build tree.
+-- STATUS 2026-07-26 (later): class-1 was reverted, then RE-APPLIED after
+-- !cm_visdump confirmed the defect in game -- vanilla mode, BCBPak installed,
+-- VR 6682ffad-... resolving to Generated/Public/BCBPak/.../HUM_F_CLT_Camp_Shirt_A.GR2
+-- while body and trousers tracked the mode correctly. The 77 are LIVE in the
+-- `vanilla` subtable. This paragraph describes an ACTIVE set, and the gate below
+-- is what keeps those clone GUIDs off non-BCBPak users.)
+--
+-- NOT GATED (1) -- `sbbf` / `bcb`. ClothMorph's OWN refits, shipped whole in base
+-- Content. Verified 2026-07-26: [PAK]_ClothMorph_Refits and _Refits_BCB reference
+-- only Generated/Public/ClothMorphContent; zero BCBPak vpaths. The BCB body SHAPE
+-- is a base feature that must keep working for users who do not own BCBPak.
+-- ("the BCB part" is ambiguous between the BCBPak ADD-ON and the BCB body MODE;
+-- only the former depends on BCBPak.)
+--
+-- NOT GATED (2) -- vanilla entries merged at runtime by TryMergeExternal.
+-- Caught by adversarial review 2026-07-26: ClothMorphSCO registers 129 `vanilla`
+-- entries whose job is to escape **BCBScantily**'s in-place redefinitions
+-- (ClothMorphSCO_Build_Report_2026-07-16.md:20). BCBScantily
+-- (75934b95-f697-4d5b-890c-fe198b799484) is a DIFFERENT MOD from BCBPak
+-- (1d24059d-...). A blanket `choice == "vanilla"` gate would disable SCO's
+-- defence based on the presence of an unrelated mod. Hence BASE_VANILLA below:
+-- the gate is keyed per-VR on the base key set snapshotted at load time, so
+-- anything merged later passes through untouched. Any future add-on that needs
+-- its own presence gate must implement it against ITS OWN source mod.
+--
+-- Degradation when gated off: the original VR passes through -- identical to the
+-- existing F1 and OPTOUT contracts. Nothing is invisible; the shipped
+-- [PAK]_ClothMorph_Refits_Vanilla bank simply goes unreferenced.
+--
+-- API: Ext.Mod.GetLoadOrder() verified populating in this BG3SE build
+-- (2026-07-25 CMLO dump, _bcbfull_work\ACTIVE_MODLIST_SE_2026-07-25.tsv, 1,493
+-- rows). Probed ONCE from the existing SessionLoaded handler; no new
+-- subscription, no per-tick cost.
+-- ---------------------------------------------------------------------------
+M.BCBPAK_UUID = "1d24059d-ff23-4a79-8892-57c85d512416"
+
+-- Snapshot of the BASE vanilla keys, taken now -- before any external mod can
+-- merge into M.REFIT_BY_VR.vanilla. Only these are gateable.
+local BASE_VANILLA = {}
+for k in pairs(M.REFIT_BY_VR.vanilla or {}) do BASE_VANILLA[tostring(k):lower()] = true end
+
+local bcbpakPresent = nil   -- tri-state: nil = not yet probed
+local probeWarned   = false -- warn ONCE per session, not ~6000x (one per BuildArray)
+
+-- Returns true/false. Cached after the first successful probe.
+--
+-- 2026-07-26 (adversarial review S2): the failure state is NO LONGER LATCHED.
+-- It used to set probeFailed=true and short-circuit for the rest of the session,
+-- so a single empty GetLoadOrder() at SessionLoaded permanently pinned the answer
+-- to "PRESENT". With class-1 the gated surface grew from 405 armour VRs to 482
+-- including common civilian clothes, which is exactly the surface this gate exists
+-- to keep our clone GUIDs off for non-BCBPak users. Now every call re-probes until
+-- one succeeds; only the WARNING is latched, which is what the ~6000x concern was
+-- actually about.
+function M.HasBCBPak()
+    if bcbpakPresent ~= nil then return bcbpakPresent end
+    local want, found, seen, first = M.BCBPAK_UUID:lower(), false, 0, nil
+    local ok = pcall(function()
+        for _, u in ipairs(Ext.Mod.GetLoadOrder() or {}) do
+            seen = seen + 1
+            if first == nil then first = tostring(u) end
+            if tostring(u):lower() == want then found = true; break end
+        end
+    end)
+    -- seen == 0 means the API returned nothing usable. Treating that as
+    -- "absent" would silently strip the remap from a genuine BCBPak user, so
+    -- it counts as a probe failure, not a negative result. NOT cached -- retry
+    -- on the next call (e.g. after LevelGameplayStarted, when mods are settled).
+    if not ok or seen == 0 then
+        if not probeWarned then
+            probeWarned = true
+            Warn("HasBCBPak: load-order probe unusable (ok=" .. tostring(ok)
+                 .. ", entries=" .. tostring(seen) .. "); assuming PRESENT (fail-safe)."
+                 .. " Will retry on later calls.")
+        end
+        return true
+    end
+    bcbpakPresent = found
+    -- S3: log the first entry verbatim. If a future SE build returns objects
+    -- instead of UUID strings, `seen > 0` but nothing ever matches, and the gate
+    -- would silently disable class-1 for a real BCBPak user while logging a
+    -- confident "NOT present". This line makes that diagnosable from the log.
+    if not found then
+        Log("HasBCBPak: no match; first load-order entry was <" .. tostring(first)
+            .. "> (expect a bare UUID string).")
+    end
+    Log("BCBPak " .. (found and "DETECTED" or "NOT present") .. " (" .. seen
+        .. " modules) -> base vanilla-VR remap " .. (found and "ENABLED" or "DISABLED")
+        .. "; sbbf/bcb and external refits unaffected.")
+    return bcbpakPresent
+end
+
+-- Test/console hook (!cm_bcbpak). nil clears the cache so the next call
+-- re-probes. Changing the value re-runs the vanilla pass, because arrays already
+-- injected under the minted key are otherwise stale and InjectTemplate's
+-- present-check would block re-injection -- the same trap RepassAfterExternalMerge
+-- was added to fix. Without this, a forced toggle would report a bogus PASS.
+function M.SetBCBPakPresent(v)
+    local prev = bcbpakPresent
+    bcbpakPresent = (v == nil) and nil or (v and true or false)
+    probeWarned = false
+    Log("HasBCBPak override -> " .. tostring(bcbpakPresent) .. " (was " .. tostring(prev) .. ")")
+    if M.HasBCBPak() ~= (prev == true) then
+        -- force=true bypasses PassDone, same contract as RepassAfterExternalMerge.
+        pcall(function() M.RunBlanketPass("vanilla", true) end)
+        pcall(function() M.ReapplyAll() end)
+        Log("HasBCBPak change -> vanilla pass re-run.")
+    end
+end
+
+-- ---------------------------------------------------------------------------
 -- Internals
 -- ---------------------------------------------------------------------------
 local PassDone = {}      -- [choice] = true once the blanket pass ran this session
@@ -971,13 +1603,59 @@ end
 -- VisualResource id that has a refit (REFIT_BY_VR) for its minted refit id.
 -- Per-VR keying => materially correct even when a GR2 is shared by multiple VRs.
 -- templateId kept in the signature for logging/back-compat; not used for matching.
+-- F1 (v4.13): set true only when CheckContentPresence proves the ClothMorphContent
+-- VisualBank is absent. Default false => BuildArray behaves EXACTLY as before
+-- (zero change in the normal, content-present case).
+M._ContentAbsent = false
+
+-- Base-map canaries captured NOW, at module load, BEFORE any external add-on
+-- refits are merged into M.REFIT_BY_VR (those merge later via
+-- RegisterExternalRefits). CheckContentPresence probes THESE deterministic
+-- base ids only, so (a) an add-on with unresolved meshes can never make the
+-- base content look "absent".
+-- CORRECTION 2026-07-26 (review S6): the old claim here -- "the probe set is
+-- stable, not a nondeterministic pairs() window" -- was FALSE. The loop below is
+-- literally `for _, refit in pairs(map)` with a break at 6, so which six get
+-- sampled depends on table hash order and changed when class-1 added 77 keys.
+-- It does not matter for the absent/present verdict (M._ContentAbsent only fires
+-- when ALL 18 fail to resolve, and the sbbf/bcb canaries are unaffected), but it
+-- is NOT a per-key guarantee: a Content pak missing only the class-1 bank would
+-- pass this check and still render those 77 garments invisible. That case is
+-- prevented by deploy ORDER (Content before Runtime) + live-SHA verification in
+-- _v416_repack_deploy.ps1, not by this probe.
+M._BASE_CANARIES = (function()
+    local out = {}
+    for _, choice in ipairs({ "vanilla", "sbbf", "bcb" }) do
+        local map = M.REFIT_BY_VR[choice]
+        local n = 0
+        if type(map) == "table" then
+            for _, refit in pairs(map) do
+                out[#out + 1] = tostring(refit)
+                n = n + 1
+                if n >= 6 then break end
+            end
+        end
+    end
+    return out
+end)()
+
 local function BuildArray(choice, templateId, srcArr)
     local map = M.REFIT_BY_VR[choice]
     if map == nil then return srcArr, false end
     local out, isRefit = {}, false
+    -- BCBPak gate (2026-07-26): hoisted out of the loop; HasBCBPak is cached.
+    -- Only the BASE vanilla keys are gateable -- externally merged vanilla
+    -- entries (e.g. ClothMorphSCO's 129, which defend against BCBScantily, a
+    -- DIFFERENT mod) must never be disabled by BCBPak's absence.
+    local gateBaseVanilla = (choice == "vanilla") and (not M.HasBCBPak())
     for _, vid in ipairs(srcArr) do
-        local refit = map[lc(vid)]
-        if refit ~= nil then
+        local key = lc(vid)
+        local refit = map[key]
+        if gateBaseVanilla and BASE_VANILLA[key] then refit = nil end
+        -- F1 guard: if the content pak is proven absent, pass the ORIGINAL VR
+        -- through (visible vanilla look) instead of a minted id that would
+        -- resolve to nothing (invisible). Normal case: _ContentAbsent=false.
+        if refit ~= nil and not M._ContentAbsent then
             out[#out + 1] = tostring(refit)
             isRefit = true
         else
@@ -985,6 +1663,38 @@ local function BuildArray(choice, templateId, srcArr)
         end
     end
     return out, isRefit
+end
+
+-- F1 (v4.13): confirm ClothMorphContent's VisualBank is actually loaded. The
+-- base refit map points at minted VRs that live in that pak; if the user
+-- disabled/removed it, injected refits resolve to nothing => invisible gear.
+-- Called from BootstrapServer's LevelGameplayStarted (resources guaranteed
+-- loaded). Probes up to 8 base-map minted ids; if NONE resolve, flip
+-- M._ContentAbsent so BuildArray degrades to visible pass-through, force a
+-- rebuilding re-pass of any minted choices, and warn loudly. Zero effect when
+-- content is present (the normal case).
+function M.CheckContentPresence()
+    local probed, resolved = 0, 0
+    for _, refit in ipairs(M._BASE_CANARIES or {}) do
+        probed = probed + 1
+        local ok = false
+        pcall(function() ok = Ext.Resource.Get(refit, "Visual") ~= nil end)
+        if ok then resolved = resolved + 1 end
+    end
+    M._ContentAbsent = (probed > 0 and resolved == 0)
+    if M._ContentAbsent then
+        Warn("ClothMorphContent VisualBank NOT found (probed " .. tostring(probed)
+            .. " base-map refit ids, 0 resolved). Clothing refits DISABLED to avoid "
+            .. "invisible gear - garments keep their original (vanilla) look. Enable/"
+            .. "install the ClothMorphContent pak and load it below ClothMorphRuntime.")
+        for choice in pairs(M.MINTED or {}) do
+            pcall(function() M.RunBlanketPass(choice, true) end)
+        end
+    else
+        Log(("ClothMorphContent presence OK (probed %d base-map ids, %d resolved).")
+            :format(probed, resolved))
+    end
+    return not M._ContentAbsent
 end
 
 -- OPT-OUT (2026-07-06, option 2 for hybrid modded outfits): root-template IDs
@@ -995,6 +1705,18 @@ end
 -- PersistentVars.OptoutTemplates by BootstrapServer at SessionLoaded and
 -- updated live by M.SetOptout (!cm_optout).
 M.OPTOUT = {}
+
+-- BAKED-BODY EXCLUSION (v4.12, 2026-07-20). Root-template ids (lowercase) of
+-- BCB garments that carry their OWN nude-body mesh baked into the garment GR2
+-- (detected at build time by a NKD_Body/_adjust_Mesh submesh; e.g. Full Metal
+-- Dress = CorsetSkirtArm). For these we leave the garment UNTOUCHED so it works
+-- exactly as the original BCB mod: consulted in InjectTemplate exactly like an
+-- opt-out (minted key = VERBATIM source array, no refit swap) for ALL bodies,
+-- and BootstrapServer keeps them OUT of REVEALING_TORSO so the nude override is
+-- stripped under them. Extend this list from the build-time baked-body scan.
+M.BAKED_EXCLUDE = {
+    ["20bf6831-84ff-42d1-aa18-a97dc3f96a6a"] = true, -- HUM_F_CLT_CorsetSkirtArm_KEL (Full Metal Dress) - bakes HUM_F_NKD_Body_A_adjust_Mesh1
+}
 
 -- DEFAULT (BUILT-IN) PER-(item x body) OPT-OUT (2026-07-07, MCT_Design_v1.md
 -- section 4 rule). Keyed by body choice -> set of ROOT-TEMPLATE ids (lowercase)
@@ -1018,9 +1740,18 @@ M.OPTOUT = {}
 -- other mod/item is affected (opt-out is keyed on these template ids only).
 M.DEFAULT_OPTOUT_BY_BODY = {
     sbbf = {
-        ["3b692a26-cd94-4adf-8d8c-ea26219b78e3"] = true, -- BW_Moonshadow_Body_A
-        ["e1904108-e88c-4f0d-b4c9-f9d696af62f5"] = true, -- BW_Moonshadow_Body_B
-        ["fae28f64-33f7-4514-9d20-e9780c501538"] = true, -- BW_Moonshadow_Body_C
+        -- v4.18 (2026-07-27): SBBF opt-out REMOVED for Moonshadow. The verbatim
+        -- opt-out, with BCBPak installed, resolved these VRs to BCBPak's in-place
+        -- meshes (revealing Leather_A_Pants + EMPTY 84195a60) = Alan's "no pants".
+        -- Removing the opt-out lets Body(66bcfba0)->cab99f1a and Pants(27e35669)->
+        -- 96456f70 remap to our SBBF clones (pants restored). The 2026-07-07 note
+        -- warned the remap may clip slightly; Alan chose pants-with-possible-clip
+        -- over no-pants (2026-07-27). 84195a60 custom top stays passthrough/empty
+        -- (no SBBF clone) -> v1.3: mint it + co-deform for a clean fit. bcb still
+        -- NOT opted out (crop-top look Alan likes is unchanged).
+        -- ["3b692a26-cd94-4adf-8d8c-ea26219b78e3"] = true, -- BW_Moonshadow_Body_A
+        -- ["e1904108-e88c-4f0d-b4c9-f9d696af62f5"] = true, -- BW_Moonshadow_Body_B
+        -- ["fae28f64-33f7-4514-9d20-e9780c501538"] = true, -- BW_Moonshadow_Body_C
     },
     bcb = {},
 }
@@ -1048,8 +1779,8 @@ local function InjectTemplate(choice, t, srcRace, overwrite)
     pcall(function() id = tostring(t.Id) end)
     local arr, isRefit
     local defBody = M.DEFAULT_OPTOUT_BY_BODY[choice]
-    if M.OPTOUT[lc(id)] or (defBody and defBody[lc(id)]) then
-        arr, isRefit = src, false  -- opted out (live or built-in default): verbatim copy, no vanilla-VR remap
+    if M.BAKED_EXCLUDE[lc(id)] or M.OPTOUT[lc(id)] or (defBody and defBody[lc(id)]) then
+        arr, isRefit = src, false  -- baked-body-excluded / opted out (live or built-in default): verbatim copy, no vanilla-VR remap
     else
         arr, isRefit = BuildArray(choice, id, src)
     end
@@ -1087,7 +1818,10 @@ function M.RunBlanketPass(choice, force)
         pcall(function() isItem = (t.TemplateType == "item") end)
         if isItem then
             Stats.templates = Stats.templates + 1
-            local r = InjectTemplate(choice, t)
+            -- v4.10: force also OVERWRITES already-injected arrays (needed so a
+            -- forced re-pass picks up externally registered refit entries; the
+            -- old force only bypassed PassDone and then hit the present-gate).
+            local r = InjectTemplate(choice, t, nil, force)
             if     r == "injected" then Stats.injected = Stats.injected + 1
             elseif r == "refit"    then Stats.refits   = Stats.refits + 1
             elseif r == "present"  then Stats.present  = Stats.present + 1
@@ -1232,13 +1966,19 @@ function M.SetClothed(char, choice, pvRec)
     if t == nil then Warn("SetClothed: no ServerCharacter.Template for " .. tostring(char)); return false end
     local cur = M.ReadEquipRace(char)
 
-    if choice == "vanilla" then
+    -- "off" = restore the character's TRUE original EquipmentRace (the revert /
+    -- uninstall / hand-back path; called by !cm_revert). 2026-07-15: the
+    -- user-facing "vanilla" body CHOICE is no longer this branch - it is now a
+    -- MINTED flip (MINTED.vanilla, falls through below) so it serves our clean
+    -- vanilla clothing and OVERRIDES BCB's global in-place VR override. Only
+    -- "off" restores the original ER.
+    if choice == "off" then
         -- Recovery: if we never captured the original (corrupted save where the
         -- minted ER persisted), fall back to the KNOWN_ORIG table so revert can
         -- still work. Manual override: !cm_seterace <guid> (M.ForceSetEquipRace).
         local orig = pvRec.OrigEquipRace or M.KNOWN_ORIG[lc(char)]
         if orig == nil then
-            Warn("SetClothed(vanilla): no recorded original AND no KNOWN_ORIG entry - "
+            Warn("SetClothed(off): no recorded original AND no KNOWN_ORIG entry - "
                 .. "cannot restore. Use !cm_seterace <origGuid> to recover this character.")
             -- C2 fix (2026-07-06): do NOT mark vanilla / return success here. The live
             -- ER is still minted; recording "vanilla" would make the next session skip
@@ -1249,11 +1989,11 @@ function M.SetClothed(char, choice, pvRec)
         end
         if pvRec.OrigEquipRace == nil then
             pvRec.OrigEquipRace = orig  -- persist the recovered value
-            Log("SetClothed(vanilla): recovered original from KNOWN_ORIG -> " .. tostring(orig))
+            Log("SetClothed(off): recovered original from KNOWN_ORIG -> " .. tostring(orig))
         end
         local okW = pcall(function() t.EquipmentRace = orig end)
-        if not okW then Warn("SetClothed(vanilla): restore write failed."); return false end
-        pvRec.ClothedChoice = "vanilla"
+        if not okW then Warn("SetClothed(off): restore write failed."); return false end
+        pvRec.ClothedChoice = "off"
         pvRec.NeedsRecovery = nil
         Log(("SetClothed: %s restored EquipmentRace %s -> %s."):format(tostring(char), tostring(cur), tostring(orig)))
         M.RefreshEquipment(char)
@@ -1325,7 +2065,7 @@ end
 function M.ReapplyAll(bodies, reason)
     local n = 0
     for char, rec in pairs(bodies or {}) do
-        if rec.ClothedChoice ~= nil and rec.ClothedChoice ~= "vanilla" then
+        if rec.ClothedChoice ~= nil and M.MINTED[rec.ClothedChoice] ~= nil then  -- 2026-07-15: gate on MINTED (incl. vanilla), not ~="vanilla"
             local cur = M.ReadEquipRace(char)
             local minted = M.MINTED[rec.ClothedChoice]
             if minted ~= nil then
@@ -1351,7 +2091,7 @@ end
 -- On-equip hook: if a managed, flipped character equips an item whose template
 -- lacks our key (modded item / child template), inject and re-render that item.
 function M.OnEquipped(item, char, rec)
-    if rec == nil or rec.ClothedChoice == nil or rec.ClothedChoice == "vanilla" then return end
+    if rec == nil or rec.ClothedChoice == nil or M.MINTED[rec.ClothedChoice] == nil then return end  -- 2026-07-15: gate on MINTED (incl. vanilla)
     local r = InjectEquippedItemWithFallback(rec.ClothedChoice, item, rec.OrigEquipRace, "OnEquipped")
     if r == "injected" or r == "refit" then
         Log("OnEquipped: late-injected template for " .. tostring(item) .. "; re-equipping to refresh.")
@@ -1379,9 +2119,9 @@ function M.ForceSetEquipRace(char, guid, pvRec)
     if not okW then Warn("ForceSetEquipRace: write failed."); return false end
     if pvRec ~= nil then
         pvRec.OrigEquipRace = guid   -- treat the written value as the known-good original
-        pvRec.ClothedChoice = "vanilla"
+        pvRec.ClothedChoice = "off"  -- 2026-07-15: restore/recovery state (NOT the minted "vanilla" flip) so a reload doesn't re-flip and undo the recovery
     end
-    Log(("ForceSetEquipRace: %s EquipmentRace %s -> %s (recorded as orig; clothed=vanilla).")
+    Log(("ForceSetEquipRace: %s EquipmentRace %s -> %s (recorded as orig; clothed=off).")
         :format(tostring(char), tostring(cur), tostring(guid)))
     M.RefreshEquipment(char)
     return true
@@ -1418,6 +2158,141 @@ function M.DumpStatus(char, rec)
         end
     end
     Log("---------------------")
+end
+
+-- ---------------------------------------------------------------------------
+-- EXTERNAL REFIT REGISTRATION (v4.10, 2026-07-16 - optional content-pak hook,
+-- first consumer: ClothMorphSCO). An add-on's own SE module calls
+--   Mods.ClothMorphRuntime.RegisterExternalRefits("SCO", maps)
+-- where maps = { vanilla={ [vrId]=mintedId }, sbbf={...}, bcb={...} }.
+-- B2 guard (resolve-before-flip): a key is only merged after its minted id
+-- resolves as a Visual resource; unresolved entries are queued and retried
+-- once at LevelGameplayStarted (resources guaranteed loaded), then dropped
+-- with a warning. A dropped entry means BuildArray passes the ORIGINAL VR
+-- through - items degrade to their vanilla look, never invisible.
+-- Base-map keys are never overwritten (collisions logged, base kept).
+-- Keys are raw lowercase strings, NOT parsed as UUIDs (SCO ships two
+-- malformed-but-functional resource ids).
+-- ---------------------------------------------------------------------------
+M._ExternalPending = {}
+
+-- Provenance (v4.13, Feature 2): optional per-source info recorded by
+-- RegisterExternalRefits' 3rd arg. Used by CheckExternalSources to warn when a
+-- flagged source mod is absent or has drifted since its refits were generated.
+-- { [sourceName] = { sourceModUuid, sourceModVersion, flagSha256, credit } }
+M.ExternalSources = {}
+
+local function TryMergeExternal(sourceName, choice, vid, refit)
+    local dst = M.REFIT_BY_VR[choice]
+    if dst == nil then return "badchoice" end
+    local key = lc(vid)
+    local resolved = false
+    pcall(function()
+        resolved = Ext.Resource.Get(tostring(refit), "Visual") ~= nil
+    end)
+    if not resolved then return "unresolved" end
+    if dst[key] ~= nil and lc(dst[key]) ~= lc(refit) then return "collision" end
+    dst[key] = tostring(refit)
+    return "added"
+end
+
+-- After merging entries for a choice whose blanket pass ALREADY ran this
+-- session, the injected minted-key arrays are stale (built without the new
+-- entries) and InjectTemplate's present-gate blocks a plain re-run. Force a
+-- rebuilding re-pass for exactly those choices. (Reviewer blocker B1
+-- 2026-07-16: without this, SCO refits silently die after save reload.)
+local function RepassAfterExternalMerge(choices)
+    for choice in pairs(choices) do
+        if PassDone[choice] then
+            Log(("External refits merged into '%s' after its blanket pass - forcing a rebuilding re-pass."):format(choice))
+            pcall(function() M.RunBlanketPass(choice, true) end)
+        end
+    end
+end
+
+function M.RegisterExternalRefits(sourceName, maps, info)
+    if type(maps) ~= "table" then
+        Warn(("RegisterExternalRefits(%s): maps is not a table"):format(tostring(sourceName)))
+        return false
+    end
+    -- v4.13 provenance: record optional info (backward-compatible; SCO passes nil).
+    if type(info) == "table" then
+        M.ExternalSources[tostring(sourceName)] = info
+    end
+    local added, pending, collided, badchoice = 0, 0, 0, 0
+    local touched = {}
+    for choice, map in pairs(maps) do
+        if type(map) == "table" then
+            for vid, refit in pairs(map) do
+                local r = TryMergeExternal(sourceName, choice, vid, refit)
+                if r == "added" then added = added + 1; touched[choice] = true
+                elseif r == "collision" then collided = collided + 1
+                elseif r == "badchoice" then badchoice = badchoice + 1
+                else
+                    pending = pending + 1
+                    M._ExternalPending[#M._ExternalPending + 1] =
+                        { source = tostring(sourceName), choice = choice, vid = vid, refit = refit }
+                end
+            end
+        end
+    end
+    Log(("RegisterExternalRefits(%s): added=%d pending(unresolved)=%d collided(base kept)=%d badChoice=%d")
+        :format(tostring(sourceName), added, pending, collided, badchoice))
+    if added > 0 then RepassAfterExternalMerge(touched) end
+    return added > 0 or pending > 0
+end
+
+-- Retry queued entries once resources are certain to be loaded. Called from
+-- BootstrapServer's LevelGameplayStarted listener BEFORE ReapplyAll.
+function M.RetryPendingExternalRefits()
+    if #M._ExternalPending == 0 then return end
+    local added, dropped = 0, 0
+    local touched = {}
+    for _, e in ipairs(M._ExternalPending) do
+        local r = TryMergeExternal(e.source, e.choice, e.vid, e.refit)
+        if r == "added" then added = added + 1; touched[e.choice] = true
+        else
+            dropped = dropped + 1
+            Warn(("External refit DROPPED (%s/%s): %s -> %s (%s) - item falls back to original VR")
+                :format(tostring(e.source), tostring(e.choice), tostring(e.vid), tostring(e.refit), r))
+        end
+    end
+    Log(("RetryPendingExternalRefits: added=%d dropped=%d"):format(added, dropped))
+    M._ExternalPending = {}
+    if added > 0 then RepassAfterExternalMerge(touched) end
+end
+
+-- v4.13 provenance check. For each registered external source that supplied a
+-- sourceModUuid, log if that mod is now ABSENT (refits still render from the
+-- add-on's own bundled meshes, like SCO) or warn if its version differs from
+-- what the refits were generated against. Log-only; never blocks. SE API names
+-- (Ext.Mod.IsModLoaded / Ext.Mod.GetMod().Info.ModVersion) and the ModVersion
+-- format are unverified (plan O7): all wrapped in pcall, and the version compare
+-- is skipped unless ModVersion is a plain string/number, so an API/format change
+-- degrades to a silent skip rather than a false "updated" warning.
+function M.CheckExternalSources()
+    for name, info in pairs(M.ExternalSources or {}) do
+        if type(info) == "table" and info.sourceModUuid ~= nil then
+            local loaded = false
+            pcall(function() loaded = Ext.Mod.IsModLoaded(tostring(info.sourceModUuid)) == true end)
+            if not loaded then
+                Log(("External source '%s': source mod %s not loaded; its refits still "
+                    .. "render from bundled meshes."):format(tostring(name), tostring(info.sourceModUuid)))
+            elseif info.sourceModVersion ~= nil then
+                local ver
+                pcall(function()
+                    local m = Ext.Mod.GetMod(tostring(info.sourceModUuid))
+                    ver = m and m.Info and m.Info.ModVersion
+                end)
+                if (type(ver) == "string" or type(ver) == "number")
+                   and tostring(ver) ~= tostring(info.sourceModVersion) then
+                    Warn(("External source '%s' updated since refits were generated "
+                        .. "(was %s, now %s); refits may not match new/changed items.")
+                        :format(tostring(name), tostring(info.sourceModVersion), tostring(ver)))
+                end
+            end
+        end
+    end
 end
 
 return M

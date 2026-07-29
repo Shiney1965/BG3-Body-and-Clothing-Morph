@@ -78,7 +78,7 @@ function M.InstallServer(deps)
     end
     Subscribe({
         Log = deps.Log, Warn = deps.Warn, IsValid = deps.IsValid,
-        Apply = function(choice)
+        Apply = function(choice, payload)   -- payload IS passed by Subscribe (2nd arg); was read as a nil global before (v4.13 fix m3/F6)
             local char = nil
             if deps.ResolveMcmTarget ~= nil then
                 char = deps.ResolveMcmTarget(payload)
@@ -144,6 +144,49 @@ function M.ApplyOnLoad(deps)
         deps.Log(("MCM: apply_on_load -> re-applying '%s' to %s"):format(choice, tostring(char)))
         deps.SetDesiredBody(char, choice)
     end)
+end
+
+-- HOTKEYS (v4.13) --------------------------------------------------------
+-- Dedupe belt (review B1): the apply paths that a hotkey drives (server
+-- Cmd_CycleBody / net setbody) bypass NetApply, so if an MCM radio echo ever
+-- reaches NetApply it would double-apply. The primary fix is client-side
+-- (MCM.Set(..., shouldEmitEvent=false) suppresses the echo entirely), but we
+-- also let the server mark the value so a stray echo dedupes here too.
+function M.NoteApplied(choice)
+    choice = ToChoice(choice)
+    if choice == nil then return end
+    last.value, last.t = choice, Now()
+end
+
+-- CLIENT keybinding registration. MCM >= 1.19 required for MCM.Keybinding;
+-- an older/absent MCM degrades to a logged no-op (same pattern as McmPresent()).
+-- Call this from Ext.Events.SessionLoaded (client) so the MCM global is present
+-- (review M2: top-level registration can race MCM's own API injection).
+-- deps: { Log, Warn, Forward(cmd, arg) }  -- Forward = BootstrapClient ForwardForTarget
+local KEY_TO_CMD = {
+    key_cycle_body  = { cmd = "cyclebody", arg = nil },
+    key_set_vanilla = { cmd = "setbody",   arg = "vanilla" },
+    key_set_sbbf    = { cmd = "setbody",   arg = "sbbf" },
+    key_set_bcb     = { cmd = "setbody",   arg = "bcb" },
+}
+function M.InstallKeybindings(deps)
+    if not McmPresent() then deps.Log("MCM not detected; hotkeys idle."); return end
+    local ok, err = pcall(function()
+        if type(MCM) ~= "table" or type(MCM.Keybinding) ~= "table"
+            or type(MCM.Keybinding.SetCallback) ~= "function" then
+            error("MCM.Keybinding.SetCallback missing (MCM < 1.19?)")
+        end
+        local n = 0
+        for id, spec in pairs(KEY_TO_CMD) do
+            MCM.Keybinding.SetCallback(id, function(_e)
+                -- target is resolved by ForwardForTarget (controlled character)
+                deps.Forward(spec.cmd, spec.arg)
+            end)
+            n = n + 1
+        end
+        deps.Log(("Hotkey callbacks registered (%d)."):format(n))
+    end)
+    if not ok then deps.Warn("Hotkey registration failed: " .. tostring(err)) end
 end
 
 return M
