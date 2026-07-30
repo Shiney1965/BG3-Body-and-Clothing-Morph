@@ -317,7 +317,7 @@ Ext.Events.SessionLoaded:Subscribe(function()
     McmGlue.InstallKeybindings({ Log = Log, Warn = Warn, Forward = ForwardForTarget })
 end)
 
-Log("BootstrapClient v4.13 loaded. Commands (forward to server): "
+Log("BootstrapClient v4.19 loaded. Commands (forward to server): "
     .. "!cm_setbody !cm_cyclebody !cm_setclothed !cm_seterace !cm_erpass !cm_erstatus !cm_refresh "
     .. "!cm_applyccsv !cm_revert !cm_status !cm_checkbody ; "
     .. "!cm_findoverride !cm_visdump (local client scans). Hotkeys: bind in MCM (unbound by default).")

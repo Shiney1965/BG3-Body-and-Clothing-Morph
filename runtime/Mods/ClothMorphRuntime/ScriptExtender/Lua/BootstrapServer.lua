@@ -322,6 +322,34 @@ local function ResolveBodyVr(choice, race, bt, bs)
     return vr, ccsv
 end
 
+-- v4.19 HOTFIX (2026-07-29): minted TRUE-VANILLA HUM_F body.
+-- Vanilla mode used to RESTORE the install's original body; on body-replacer
+-- installs (Unique Tav / BCB-UT) the original is not vanilla-shaped, so
+-- "vanilla" rendered a modded body (field report + visdump 2026-07-29:
+-- VR 53715306 -> BCBUniqueTav GR2). Vanilla now FORCES this minted VR, exactly
+-- like sbbf/bcb force theirs. Bank: ClothMorphContent
+-- [PAK]_CM_Vanilla_Female_Body/_merged.lsf; GR2 = Larian's vanilla
+-- HUM_F_NKD_Body_A (SHA256 00103976f4...) at .../_Female/Resources_Vanilla/.
+-- VR guid = uuid5(NAMESPACE_URL, "clothmorph:vanilla:HUM_F_NKD_Body_A").
+local VANILLA_BODY_VR = "3bc12bd9-6c5e-5067-a20f-b17e45647a10"
+-- Gate: the 7 HUM_F-body races are exactly the ones whose bcb profile resolves
+-- to the HUM_F CCSV below (Githyanki resolve to their own CCSV and are
+-- excluded; their vanilla stays restore-original). The Ext.Resource.Get check
+-- makes a stale/missing ClothMorphContent degrade to the v4.18
+-- restore-original behavior instead of writing an unresolvable VR
+-- (invisible body).
+local HUM_F_BCB_CCSV = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce"
+local function ResolveVanillaBodyVr(entity)
+    local vr = nil
+    pcall(function()
+        local race, bt, bs = Shared.ReadCharStats(entity)
+        if Shared.ResolveCcsv("bcb", race, bt, bs) ~= HUM_F_BCB_CCSV then return end
+        if Ext.Resource.Get(VANILLA_BODY_VR, "Visual") == nil then return end
+        vr = VANILLA_BODY_VR
+    end)
+    return vr
+end
+
 -- Full visual rebuild: touch CCA.Visuals + Replicate (probe 'replicate').
 local function ForceVisualRebuild(char)
     local ok = pcall(function()
@@ -430,6 +458,7 @@ local function RevertChar(char)
     StripOurOverride(char)
     local rec = pv.Bodies[char] or {}
     rec.Choice, rec.AppliedCcsv, rec.DesiredCcsv = "vanilla", nil, nil
+    rec.Reverted = true  -- v4.19: revert = mod-off (restore ORIGINAL body), NOT the forced true-vanilla body
     pv.Bodies[char] = rec
     pcall(function() EquipRace.SetClothed(char, "off", rec) end)  -- clothed half: restore ORIGINAL ER (2026-07-15: "off", not "vanilla" which is now a minted flip)
     Log("RevertChar: " .. tostring(char) .. " reverted to vanilla body + clothing")
@@ -596,19 +625,30 @@ ReapplyBaseBodies = function(reason)
     local n = 0
     for char, rec in pairs(pv.Bodies or {}) do
         local choice = rec.Choice
-        if choice == "sbbf" or choice == "bcb" then
+        -- v4.19 HOTFIX: vanilla is now a FORCED body too (true-vanilla VR), so
+        -- recorded vanilla picks re-apply on load like sbbf/bcb. rec.Reverted
+        -- (set by !cm_revert) means mod-off -> keep restore-original, skip.
+        if choice == "sbbf" or choice == "bcb"
+           or (choice == "vanilla" and rec.Reverted ~= true) then
             local entity = GetEntity(char)
             if entity == nil then
                 Log(("ReapplyBaseBodies: %s not instantiated yet (choice=%s) - will retry at the other load event")
                     :format(tostring(char), tostring(choice)))
             end
             if entity ~= nil then
-                local race, bt, bs
-                pcall(function() race, bt, bs = Shared.ReadCharStats(entity) end)
-                local vr = ResolveBodyVr(choice, race, bt, bs)
-                if vr == nil then
-                    Warn(("ReapplyBaseBodies: %s choice=%s has no resolvable body VR (race=%s) - base body left vanilla")
-                        :format(tostring(char), tostring(choice), tostring(race)))
+                local vr
+                if choice == "vanilla" then
+                    -- nil (non-HUM_F race / stale Content) = keep the v4.18
+                    -- restore-original behavior for this char; no warn.
+                    vr = ResolveVanillaBodyVr(entity)
+                else
+                    local race, bt, bs
+                    pcall(function() race, bt, bs = Shared.ReadCharStats(entity) end)
+                    vr = ResolveBodyVr(choice, race, bt, bs)
+                    if vr == nil then
+                        Warn(("ReapplyBaseBodies: %s choice=%s has no resolvable body VR (race=%s) - base body left vanilla")
+                            :format(tostring(char), tostring(choice), tostring(race)))
+                    end
                 end
                 if vr ~= nil then
                     local ok = SetBaseBody(char, choice, vr)
@@ -640,8 +680,25 @@ local function SetDesiredBody(char, choice)
     if choice == "vanilla" then
         pv.Bodies[char].Choice = "vanilla"
         pv.Bodies[char].DesiredCcsv = nil
-        -- v4.15: restore the pristine base body first (no-op if never written).
-        if MECHANISM == "C" then pcall(function() SetBaseBody(char, "vanilla", nil) end) end
+        pv.Bodies[char].Reverted = nil  -- v4.19: an explicit pick, not a revert
+        -- v4.19 HOTFIX: FORCE the true vanilla body (minted VR) instead of the
+        -- v4.15 restore-original, which on body-replacer installs is not
+        -- vanilla-shaped. Unmapped race / unresolvable bank / failed write all
+        -- fall back to the v4.18 restore-original (no-op if never written).
+        if MECHANISM == "C" then
+            local forced = false
+            local ventity = GetEntity(char)
+            if ventity ~= nil then
+                local vvr = ResolveVanillaBodyVr(ventity)
+                if vvr ~= nil then
+                    local okBase = SetBaseBody(char, "vanilla", vvr)
+                    forced = (okBase == true)
+                end
+            end
+            if not forced then
+                pcall(function() SetBaseBody(char, "vanilla", nil) end)
+            end
+        end
         Reconcile(char, "setbody-vanilla")
         pcall(function() EquipRace.SetClothed(char, "vanilla", pv.Bodies[char]) end)
         return true
@@ -881,7 +938,9 @@ local function Cmd_SetClothed(_cmd, choice, charArg)
     end
     local char = ResolveCommandChar(charArg); if not char then Warn("no character target"); return end
     local pv = EnsurePV()
-    pv.Bodies[char] = pv.Bodies[char] or { Choice = "vanilla" }
+    -- v4.19: default record carries Reverted=true so a clothed-only pick never
+    -- makes the char eligible for the forced true-vanilla BODY at load.
+    pv.Bodies[char] = pv.Bodies[char] or { Choice = "vanilla", Reverted = true }
     EquipRace.SetClothed(char, choice, pv.Bodies[char])
     EquipRace.DumpStatus(char, pv.Bodies[char])
 end
@@ -912,7 +971,8 @@ local function Cmd_SetERace(_cmd, guid, charArg)
     if not guid or guid == "" then Warn("!cm_seterace <equipmentRaceGuid> [charGuid]"); return end
     local char = ResolveCommandChar(charArg); if not char then Warn("no character target"); return end
     local pv = EnsurePV()
-    pv.Bodies[char] = pv.Bodies[char] or { Choice = "vanilla" }
+    -- v4.19: default record carries Reverted=true (recovery command, not a body pick).
+    pv.Bodies[char] = pv.Bodies[char] or { Choice = "vanilla", Reverted = true }
     EquipRace.ForceSetEquipRace(char, tostring(guid), pv.Bodies[char])
     EquipRace.DumpStatus(char, pv.Bodies[char])
 end
@@ -1290,6 +1350,6 @@ RegisterExternalRevealing = function(ids)
     return n > 0
 end
 
-Log("BootstrapServer v4.18 loaded (BASE-BODY mechanism [Outcome C] primary + CCSV fallback + conditional-strip + baked-body exclusion + MCM hotkeys + external-source provenance + content-presence guard + BCBPak presence gate + class-1 vanilla clones [74; Moonshadow fix: 84195a60/54bc906f/238f0743 reverted to passthrough] + Moonshadow SBBF opt-out removed -> Body/Pants remap to SBBF clones). Commands: !cm_setbody <vanilla|sbbf|bcb> | !cm_cyclebody |"
+Log("BootstrapServer v4.19 loaded (BASE-BODY mechanism [Outcome C] primary + CCSV fallback + conditional-strip + baked-body exclusion + MCM hotkeys + external-source provenance + content-presence guard + BCBPak presence gate + class-1 vanilla clones [74; Moonshadow fix: 84195a60/54bc906f/238f0743 reverted to passthrough] + Moonshadow SBBF opt-out removed -> Body/Pants remap to SBBF clones + v4.19 HOTFIX: vanilla mode FORCES the true-vanilla body [minted VR 3bc12bd9] instead of restore-original). Commands: !cm_setbody <vanilla|sbbf|bcb> | !cm_cyclebody |"
     .. "!cm_setclothed <vanilla|sbbf> | !cm_seterace <guid> | !cm_erpass [force] | !cm_erstatus | !cm_refresh | "
     .. "!cm_applyccsv <ccsvGuid> | !cm_revert | !cm_status | !cm_checkbody | !cm_findoverride. Hotkeys: bind in MCM (unbound by default).")

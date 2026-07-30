@@ -1,5 +1,15 @@
 # Changelog — Body and Clothing Morph for SBBF and BCB
 
+## v1.2.1 — 2026-07-30 (hotfix)
+
+**Fixed**
+- **Vanilla mode now shows the true VANILLA body.** Previously, picking Vanilla restored whatever body your install ships by default — so if you use a body replacer (e.g. Unique Tav with a BCB-shaped body), "Vanilla" still showed the replacer's shape. Vanilla mode now forces the actual vanilla body, exactly like the SBBF and BCB modes force theirs. Applies to the 7 HUM_F-body races (Human, Elf, Half-Elf, Drow subraces); Githyanki and other races keep the previous behavior. Modded/base-game garments already switched to their vanilla shapes in Vanilla mode (the 74 clean-vanilla clones) — that half was working and is unchanged.
+- `!cm_revert` still means "mod off for this character" and restores your install's original body (it is NOT the forced vanilla body).
+
+**Note for existing saves:** if you previously used `!cm_revert` to turn the mod off for a character, run `!cm_revert` on that character once after updating — older saves cannot distinguish a revert from a Vanilla pick, so such characters will show the true-vanilla body until you re-revert them.
+
+Updated files: `ClothMorphRuntime.pak` (v4.19) and `ClothMorphContent.pak` (v1.2.0). The BCB, SCO, and Githyanki add-on paks are unchanged.
+
 ## v1.2 — 2026-07-28
 
 **New**
