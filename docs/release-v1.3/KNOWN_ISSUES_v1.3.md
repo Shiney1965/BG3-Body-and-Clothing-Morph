@@ -3,6 +3,7 @@
 ## Tattoo correction test boundary
 
 - The successful gameplay test used KAVT NVP/non-VT and passed Match Vanilla, Hide on SBBF/BCB, and switching between them.
+- The relevant KAVT/tattoo entries in the tested load order were, top to bottom: UT/KAVT Universal Automatic Patcher; KAVT NVP - KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender; Rogue Tattoo; KAZSTRA CC Body Tattoo Selector; KAZSTRA Customization Patch; KAZSTRA EotB Patch; BhaalistTats; More Makeup and Tattoos; its Unique Tav Patch; and More Makeup and Tattoos Icons. Unrelated intervening mods are omitted.
 - No-KAVT and KAVT VT configurations have static coverage but were not independently gameplay-confirmed for this release.
 - The release does not bundle KAVT textures. Its compatibility definitions reference installed resources where applicable.
 

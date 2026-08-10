@@ -5,6 +5,23 @@
 - Wave 03 garments: "All those items look good"
 - Tattoo controls: "Tattoo passes on RC2, including Match Vanilla and Hide."
 
+## Tattoo Function Tested with the Following Tattoo Mod List:
+
+Relevant KAVT and tattoo entries in their exact top-to-bottom order in the tested load order (unrelated intervening mods omitted):
+
+1. `UT/KAVT Universal Automatic Patcher`
+2. `KAVT NVP - KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender`
+3. `Rogue Tattoo`
+4. `KAZSTRA CC Body Tattoo Selector`
+5. `KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender - Customization Patch`
+6. `KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender - EotB Patch`
+7. `BhaalistTats`
+8. `More Makeup and Tattoos`
+9. `More Makeup and Tattoos - Unique Tav Patch`
+10. `More Makeup and Tattoos Icons`
+
+This is the configuration that was gameplay-tested; the list is not a statement that every listed mod is required.
+
 ## Garments passed
 
 - `HUM_F_ARM_Scalemail_Armor`
