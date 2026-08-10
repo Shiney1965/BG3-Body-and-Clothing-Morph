@@ -2,13 +2,13 @@
 
 ## Result
 
-**PASS.** All **11** documentation files tracked in the prior 1.2.1 release tag were enumerated and completely reviewed. The seven public/release documents were used as the wording and structure baseline; the four internal technical records were reviewed for factual context and were not copied into customer-facing documentation.
+**PASS.** All **11** documentation files tracked in the prior v1.2.1 release tag were enumerated and completely reviewed. The seven public/release documents were used as the wording and structure baseline; the four internal technical records were reviewed for factual context and were not copied into customer-facing documentation.
 
 The restored v1.3 README and Nexus Markdown are byte-identical to each other. The Nexus BBCode retains the prior release's full section order and all checked tag families are balanced.
 
 ## Prior-release source manifest
 
-Source tag: 1.2.1 (7818dbc11cfc3658a1f9c8ffb6af3465e143f2c9)
+Source tag: v1.2.1 (7818dbc11cfc3658a1f9c8ffb6af3465e143f2c9)
 
 | Prior-release path | Use | Lines | Git blob bytes | Git blob ID |
 |---|---|---:|---:|---|
@@ -50,6 +50,6 @@ All unrelated prior sections remain: overview, compatibility/incompatibilities, 
 
 ## Stale-reference checks
 
-- No 1.4 references.
+- No v1.4 references.
 - No references to GARMENT_LISTS_v1.2.md or the superseded internal GARMENT_LISTS_v1.3_BASELINE_REFERENCE.md filename.
 - No obsolete “All 5 paks” download language.
