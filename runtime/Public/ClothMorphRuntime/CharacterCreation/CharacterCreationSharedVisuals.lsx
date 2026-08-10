@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='utf-8'?>
+<save>
+	<version major="4" minor="6" revision="0" build="1" />
+	<region id="CharacterCreationSharedVisuals">
+		<node id="root">
+			<children>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="ha22009cdgb9e9g55b1g8295gf89a0ede1bf6" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="a22009cd-b9e9-55b1-8295-f89a0ede1bf6" />
+					<attribute id="VisualResource" type="guid" value="672a9c38-ba20-4872-a072-ba7f23f58f06" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="hfe01f8f7g814eg5c2eg9829ga0467fd5a6ce" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="fe01f8f7-814e-5c2e-9829-a0467fd5a6ce" />
+					<attribute id="VisualResource" type="guid" value="74131131-2167-5e3c-a9d1-e6f18cab4ee5" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="ha8819ee1g8c30g5d9cg87e5gd6c1d1589b96" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="a8819ee1-8c30-5d9c-87e5-d6c1d1589b96" />
+					<attribute id="VisualResource" type="guid" value="bf739430-ee34-5a48-bcb0-de8874127da7" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h3d93f1a0g22bcg5938g951bgfe8b639be26b" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="3d93f1a0-22bc-5938-951b-fe8b639be26b" />
+					<attribute id="VisualResource" type="guid" value="e621fca4-ed53-5d64-b282-e0a36c3a2b9b" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="hd51dd1abg2f74g5389g8c06g98c7e7f98854" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="d51dd1ab-2f74-5389-8c06-98c7e7f98854" />
+					<attribute id="VisualResource" type="guid" value="07abdc8d-38a9-567e-ad49-06ef524410e4" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h63a631a5g6765g5ef9gbefbg85e5a8e8e87d" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="63a631a5-6765-5ef9-befb-85e5a8e8e87d" />
+					<attribute id="VisualResource" type="guid" value="f5ea4731-c402-5548-ac5b-2b79f11c6b17" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="hd711f7cag30b6g5b9bg9e9fg537ab9af8cd7" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="d711f7ca-30b6-5b9b-9e9f-537ab9af8cd7" />
+					<attribute id="VisualResource" type="guid" value="d4f7c24b-2db1-5a7b-9efa-90e192116377" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h70971573g07deg5071g8a86g1f65b71a71e7" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="70971573-07de-5071-8a86-1f65b71a71e7" />
+					<attribute id="VisualResource" type="guid" value="a1bf2bef-d41b-5953-8a0a-6285a41b62e4" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="he3643939gb718g50b4gbe1fg849ca54c2f68" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="e3643939-b718-50b4-be1f-849ca54c2f68" />
+					<attribute id="VisualResource" type="guid" value="70ff0599-08f3-5f69-9a52-fdd6b6e949a1" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h9a07df63gf3a7g516fgb209gd2e26c35ef14" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="9a07df63-f3a7-516f-b209-d2e26c35ef14" />
+					<attribute id="VisualResource" type="guid" value="ecc64f43-99dc-5706-ba04-1158391257e0" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h866d7b74gab5cg5690g8bc6g314c86bc3750" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="866d7b74-ab5c-5690-8bc6-314c86bc3750" />
+					<attribute id="VisualResource" type="guid" value="5d74e497-f089-51e6-9275-ee0d9232a144" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h61bcdb4fgb05cg52a3gab21g64ef788331b5" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="61bcdb4f-b05c-52a3-ab21-64ef788331b5" />
+					<attribute id="VisualResource" type="guid" value="caea64ea-6079-5bf5-a84d-feb2f7535e94" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h8fad947bg075cg53dfgb887ge786bb4b2f3f" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="8fad947b-075c-53df-b887-e786bb4b2f3f" />
+					<attribute id="VisualResource" type="guid" value="e34429bf-b0d5-5a3b-af8e-3d4e38bf004c" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h5b351a42g516bg520ag8493g2e3be97f926f" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="5b351a42-516b-520a-8493-2e3be97f926f" />
+					<attribute id="VisualResource" type="guid" value="c708499a-3482-5299-8231-ee4eba09f5d9" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h543d0b1ag72f9g5458g8b55gabe3161ebbf4" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="543d0b1a-72f9-5458-8b55-abe3161ebbf4" />
+					<attribute id="VisualResource" type="guid" value="051703e5-669c-57f3-859f-ab06101e415b" />
+				</node>
+				<node id="CharacterCreationSharedVisual">
+					<attribute id="DisplayName" type="TranslatedString" handle="h3b4fc8f9g8ce2g583fg8835g4117935e2b49" version="1" />
+					<attribute id="SlotName" type="FixedString" value="Body" />
+					<attribute id="UUID" type="guid" value="3b4fc8f9-8ce2-583f-8835-4117935e2b49" />
+					<attribute id="VisualResource" type="guid" value="43cbec32-9f3a-5309-8616-b26c143da176" />
+				</node>
+			</children>
+		</node>
+	</region>
+</save>

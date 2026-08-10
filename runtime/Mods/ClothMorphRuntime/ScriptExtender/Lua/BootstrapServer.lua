@@ -32,15 +32,19 @@
 -- ===========================================================================
 
 local Shared    = Ext.Require("Shared.lua")
+local TattooPolicy = Ext.Require("TattooPolicy.lua")
+local TattooStateProbe = Ext.Require("TattooStateProbe.lua")
+local TattooDiagnostics = Ext.Require("TattooDiagnostics.lua")
 local EquipRace = Ext.Require("EquipRace.lua")  -- clothed half (EquipmentRace runtime, 2026-07-01)
 local Targeting = Ext.Require("Targeting.lua")
 local SharedTemplateProbe = Ext.Require("SharedTemplateProbe.lua")
 local McmGlue   = Ext.Require("MCMIntegration.lua")  -- BG3MCM bridge (hard dependency as of v4.7, 2026-07-11)
 
 local MOD = Mods.ClothMorphRuntime
+local BG3MCM_UUID = "755a8a72-407f-4f0d-9a33-274ac0f0b53d"
 
 PersistentVars = PersistentVars or {}
-local SCHEMA_VERSION = 5  -- v5 (v4.15): added OrigBodySetVisual/CvGuid (base-body mechanism)
+local SCHEMA_VERSION = 6  -- v6: one global normalized BodyTattooPolicy enum
 
 local function Log(msg)  Ext.Utils.Print("[ClothMorphRuntime:Server] " .. tostring(msg)) end
 local function Warn(msg) Ext.Utils.PrintWarning("[ClothMorphRuntime:Server] " .. tostring(msg)) end
@@ -76,6 +80,7 @@ local function EnsurePV()
     PersistentVars = PersistentVars or {}
     PersistentVars.Bodies  = PersistentVars.Bodies or {}
     PersistentVars.OptoutTemplates = PersistentVars.OptoutTemplates or {}
+    PersistentVars.BodyTattooPolicy = TattooPolicy.Normalize(PersistentVars.BodyTattooPolicy)
     -- v3 migration: existing records gain DesiredCcsv (= AppliedCcsv if present).
     if (PersistentVars.Version or 0) < 3 then
         for _, rec in pairs(PersistentVars.Bodies) do
@@ -125,9 +130,9 @@ local function ResolveNetTarget(data, user)
     if host ~= nil and (requested == nil or requested == host) then
         return host
     end
-    -- Party-member tolerance (single-player companions). TODO-MULTIPLAYER:
-    -- replace with real per-user ownership validation once the userId<->
-    -- Osi.GetReservedUserID format mapping is calibrated from live MP logs.
+    -- Party-member tolerance for legacy per-character commands. Global tattoo
+    -- policy changes bypass this path and use strict component-backed host
+    -- ownership validation below.
     if requested ~= nil and Osi ~= nil then
         local okPM, isPM = pcall(function() return Osi.IsPartyMember(requested, 1) end)
         if okPM and (isPM == 1 or isPM == true) then
@@ -145,16 +150,145 @@ local function ResolveNetTarget(data, user)
     })
     if char == nil then
         -- Extra diagnostics so a future MP session can calibrate the id formats.
-        local reserved = nil
-        pcall(function() reserved = Osi.GetReservedUserID(requested) end)
-        Warn(("Net channel: denied cmd='%s' target='%s' reason=%s%s [senderType=%s sender=%s reservedForTarget=%s]"):format(
+        local reserved, reservedWhy = Targeting.GetReservedUserId(requested, { getEntity = GetEntity })
+        Warn(("Net channel: denied cmd='%s' target='%s' reason=%s%s [senderType=%s sender=%s reservedForTarget=%s reservedRead=%s]"):format(
             tostring(data and data.cmd),
             tostring(data and data.target),
             tostring(err),
             why and ("/" .. tostring(why)) or "",
-            type(user), tostring(user), tostring(reserved)))
+            type(user), tostring(user), tostring(reserved), tostring(reservedWhy)))
     end
     return char
+end
+
+-- Ext.Net supplies a peer/network id; Osiris ownership uses a user id whose
+-- low word is one. Accept only unambiguous scalar integers and normalize once.
+local function NormalizeNetUserId(user)
+    local kind = type(user)
+    local n = nil
+    if kind == "number" then
+        n = user
+    elseif kind == "string" then
+        n = tonumber(user)
+    else
+        return nil, "invalid-sender-type"
+    end
+    local integer = n ~= nil and math.tointeger(n) or nil
+    if integer == nil or integer < 0 or integer > 0xffffffff then
+        return nil, "invalid-sender-value"
+    end
+    return (integer & 0xffff0000) | 0x0001
+end
+
+-- Global tattoo-policy changes use a stricter authority path than ordinary
+-- per-character commands. ResolveNetTarget intentionally tolerates host and
+-- party targets for legacy single-player commands, so it must not authorize a
+-- client-forwarded global setting. The sender must own the authoritative host.
+local function AuthorizeTattooPolicyUser(user)
+    local host = GetHostChar()
+    if host == nil then
+        Warn("Tattoo policy network update denied: host character unavailable.")
+        return false
+    end
+    if user == nil then
+        Warn("Tattoo policy network update denied: missing sender ownership.")
+        return false
+    end
+    local userId, normalizeWhy = NormalizeNetUserId(user)
+    if userId == nil then
+        Warn(("Tattoo policy network update denied: malformed sender (%s)."):format(
+            tostring(normalizeWhy)))
+        return false
+    end
+    local ok, why = Targeting.CanUserControl(userId, host)
+    if not ok then
+        Warn(("Tattoo policy network update denied: host ownership check failed (%s)."):format(
+            tostring(why)))
+        return false
+    end
+    return true
+end
+
+-- BG3-MCM's saved event carries no origin. It is authoritative only when the
+-- runtime can prove a sole ClientControl user owns the host, or when the
+-- current BG3-MCM explicitly reports host-only mode. All API gaps fail closed.
+local function AuthorizeMcmTattooPolicy()
+    local host = GetHostChar()
+    if host == nil then return false, "host-unavailable" end
+
+    local userIds, distinct = {}, {}
+    local unknown = 0
+    local okList, list = pcall(function()
+        return Ext.Entity.GetAllEntitiesWithComponent("ClientControl")
+    end)
+    if okList and list ~= nil then
+        local okScan = pcall(function()
+            for _, entity in pairs(list) do
+                local raw = nil
+                pcall(function() raw = entity.UserReservedFor.UserID end)
+                local kind = type(raw)
+                local n = nil
+                if kind == "number" then
+                    n = raw
+                elseif kind == "string" then
+                    n = tonumber(raw)
+                end
+                local userId = n ~= nil and math.tointeger(n) or nil
+                if userId == nil or userId < 0 or userId > 0xffffffff then
+                    unknown = unknown + 1
+                else
+                    if distinct[userId] == nil then
+                        distinct[userId] = true
+                        userIds[#userIds + 1] = userId
+                    end
+                end
+            end
+        end)
+        if not okScan then unknown = unknown + 1 end
+    else
+        unknown = unknown + 1
+    end
+
+    local soleWhy = nil
+    if unknown == 0 and #userIds == 1 then
+        local userId = userIds[1]
+        local ownsHost, why = Targeting.CanUserControl(userId, host)
+        if ownsHost then return true, "sole-host-user" end
+        soleWhy = why or "ownership-unknown"
+    end
+
+    local okHostOnly, hostOnly = pcall(function()
+        if type(MCM) ~= "table" or type(MCM.Get) ~= "function" then
+            error("cross-mod MCM.Get unavailable")
+        end
+        return MCM.Get("host-only_mode", BG3MCM_UUID)
+    end)
+    if okHostOnly and hostOnly == true then return true, "mcm-host-only" end
+    if not okHostOnly then
+        Warn("MCM tattoo authority: host-only_mode read unavailable/failed: " .. tostring(hostOnly))
+    end
+
+    if unknown > 0 then return false, "unknown-client-control-user" end
+    if #userIds == 0 then return false, "zero-client-control-users" end
+    if #userIds > 1 then return false, "multiple-client-control-users" end
+    return false, "sole-user-not-host:" .. tostring(soleWhy)
+end
+
+local function RestoreMcmTattooPolicy()
+    local labels = { match = "Match Vanilla", hide = "Hide on SBBF/BCB" }
+    local policy = TattooPolicy.Normalize(PersistentVars.BodyTattooPolicy)
+    local label = labels[policy]
+    local ok, setResult = pcall(function()
+        if type(MCM) ~= "table" or type(MCM.Set) ~= "function" then
+            error("cross-mod non-emitting MCM.Set unavailable")
+        end
+        return MCM.Set("body_tattoo_policy", label, ModuleUUID, false)
+    end)
+    if not ok or setResult ~= true then
+        Warn("MCM tattoo policy radio restore unavailable/failed: " .. tostring(setResult))
+        return false
+    end
+    return true
 end
 
 local function GetEntity(char)
@@ -309,17 +443,43 @@ end
 
 -- choice -> target body VisualResource, by unwrapping the SAME CCSV the
 -- registry already resolves (CCSV.VisualResource; the CheckBody read path).
--- Returns vr, ccsv (both nil when unmapped).
+-- Returns vr, ccsv, tattooHandled. tattooHandled is true once an in-scope
+-- HUM_F tuple reaches pair validation, including terminal fail-open exhaustion.
+-- Callers must not resurrect the original CCSV when that status is true.
 local function ResolveBodyVr(choice, race, bt, bs)
     local ccsv = Shared.ResolveCcsv(choice, race, bt, bs)
-    if ccsv == nil then return nil, nil end
+    if ccsv == nil then return nil, nil, false end
     local vr
     pcall(function()
         local obj = Ext.StaticData.Get(ccsv, "CharacterCreationSharedVisual")
         if obj ~= nil then vr = tostring(obj.VisualResource) end
     end)
     if vr == "" or vr == "nil" then vr = nil end
-    return vr, ccsv
+    if not TattooPolicy.IsHumF(race, bt, bs) then return vr, ccsv, false end
+    local tattooPolicy = TattooPolicy.Normalize(PersistentVars.BodyTattooPolicy)
+    local environment = TattooPolicy.DetectEnvironment(function(uuid) return Ext.Mod.GetMod(uuid) end)
+    local function resourceExists(guid, kind)
+        local found = nil
+        if kind == "ccsv" then
+            pcall(function() found = Ext.StaticData.Get(guid, "CharacterCreationSharedVisual") end)
+        else
+            pcall(function() found = Ext.Resource.Get(guid, "Visual") end)
+        end
+        return found ~= nil
+    end
+    local variantVr, vrReason = TattooPolicy.Resolve(choice, race, bt, bs, tattooPolicy, environment, resourceExists)
+    local variantCcsv, ccsvReason = TattooPolicy.ResolveCcsv(choice, race, bt, bs, tattooPolicy, environment, resourceExists)
+    if variantVr == nil or variantCcsv == nil then
+        Warn(("ResolveBodyVr: tattoo pair unavailable choice=%s env=%s policy=%s vr=%s ccsv=%s")
+            :format(tostring(choice), environment, tattooPolicy, tostring(vrReason), tostring(ccsvReason)))
+        return nil, nil, true
+    end
+    if vrReason ~= "selected-primary:" .. environment .. ":" .. tattooPolicy
+       or ccsvReason ~= "selected-primary:" .. environment .. ":" .. tattooPolicy then
+        Warn(("ResolveBodyVr: tattoo policy fail-open choice=%s vr=%s ccsv=%s")
+            :format(tostring(choice), tostring(vrReason), tostring(ccsvReason)))
+    end
+    return variantVr, variantCcsv, true
 end
 
 -- v4.19 HOTFIX (2026-07-29): minted TRUE-VANILLA HUM_F body.
@@ -327,25 +487,36 @@ end
 -- installs (Unique Tav / BCB-UT) the original is not vanilla-shaped, so
 -- "vanilla" rendered a modded body (field report + visdump 2026-07-29:
 -- VR 53715306 -> BCBUniqueTav GR2). Vanilla now FORCES this minted VR, exactly
--- like sbbf/bcb force theirs. Bank: ClothMorphContent
+-- like sbbf/bcb force theirs. Bank: ClothMorphRuntime
 -- [PAK]_CM_Vanilla_Female_Body/_merged.lsf; GR2 = Larian's vanilla
 -- HUM_F_NKD_Body_A (SHA256 00103976f4...) at .../_Female/Resources_Vanilla/.
 -- VR guid = uuid5(NAMESPACE_URL, "clothmorph:vanilla:HUM_F_NKD_Body_A").
 local VANILLA_BODY_VR = "3bc12bd9-6c5e-5067-a20f-b17e45647a10"
--- Gate: the 7 HUM_F-body races are exactly the ones whose bcb profile resolves
--- to the HUM_F CCSV below (Githyanki resolve to their own CCSV and are
--- excluded; their vanilla stays restore-original). The Ext.Resource.Get check
--- makes a stale/missing ClothMorphContent degrade to the v4.18
--- restore-original behavior instead of writing an unresolvable VR
--- (invisible body).
+-- Gate: the bcb CCSV a character resolves to identifies its BODY FAMILY, and
+-- each family maps to its own minted TRUE-VANILLA VR (v4.20, Alan 2026-07-30:
+-- Githyanki added; was HUM_F-only in v4.19). The Ext.Resource.Get check makes
+-- a stale/missing pak degrade to the v4.18 restore-original behavior for that
+-- family only, instead of writing an unresolvable VR (invisible body).
 local HUM_F_BCB_CCSV = "fe01f8f7-814e-5c2e-9829-a0467fd5a6ce"
+local GTY_BCB_CCSV   = "3d93f1a0-22bc-5938-951b-fe8b639be26b"
+local VANILLA_BODY_BY_BCB_CCSV = {
+    -- HUM_F (7 races): ClothMorphRuntime v1.2.0+
+    [HUM_F_BCB_CCSV] = VANILLA_BODY_VR,
+    -- GTY_F (Githyanki, Lae'zel): ships in this main pak from v1.3
+    -- (was the standalone Githyanki add-on, retired in v1.3).
+    -- uuid5(NAMESPACE_URL, "clothmorph:gty:vanilla:GTY_F_NKD_Body_A").
+    [GTY_BCB_CCSV]   = "a4891ad7-53b0-5448-8d9c-9fabfdb067b6",
+}
 local function ResolveVanillaBodyVr(entity)
     local vr = nil
     pcall(function()
         local race, bt, bs = Shared.ReadCharStats(entity)
-        if Shared.ResolveCcsv("bcb", race, bt, bs) ~= HUM_F_BCB_CCSV then return end
-        if Ext.Resource.Get(VANILLA_BODY_VR, "Visual") == nil then return end
-        vr = VANILLA_BODY_VR
+        local ccsv = Shared.ResolveCcsv("bcb", race, bt, bs)
+        local target = nil
+        if ccsv ~= nil then target = VANILLA_BODY_BY_BCB_CCSV[ccsv] end
+        if target == nil then return end
+        if Ext.Resource.Get(target, "Visual") == nil then return end
+        vr = target
     end)
     return vr
 end
@@ -668,6 +839,103 @@ ReapplyBaseBodies = function(reason)
     if n > 0 then Log(("ReapplyBaseBodies(%s): %d character(s)"):format(tostring(reason), n)) end
 end
 
+local function ShouldRenderNakedBody(char)
+    return not IsTorsoCovered(char) or not TorsoOccludesBody(char)
+end
+
+-- Apply only the resolved naked-body half. The full SetDesiredBody path remains
+-- responsible for clothing and torso reconciliation. For policy refreshes,
+-- use the caller's read-only visibility result to write an immediately visible
+-- CCSV fallback or defer it until existing equip/unequip reconciliation next
+-- exposes the naked body.
+local function ApplyNakedBody(char, choice, rec, vr, ccsv, tattooHandled, bodyShouldRender)
+    local okNude = false
+    if MECHANISM == "C" and vr ~= nil then
+        local okBase, baseResult = SetBaseBody(char, choice, vr)
+        if okBase then
+            rec.Choice = choice
+            if rec.AppliedCcsv ~= nil or rec.DesiredCcsv ~= nil then
+                StripOurOverride(char)
+                rec.AppliedCcsv, rec.DesiredCcsv = nil, nil
+            end
+            if baseResult == "written" then return true, "base-written", tattooHandled end
+            return true, "base-current", tattooHandled
+        end
+    end
+    if not okNude and ccsv ~= nil and bodyShouldRender ~= nil then
+        rec.Choice = choice
+        rec.DesiredCcsv = ccsv
+        if not bodyShouldRender then
+            return false, "deferred", tattooHandled
+        end
+        if ApplyCcsv(char, ccsv, choice) then
+            return true, "ccsv-written", tattooHandled
+        end
+        return false, "ccsv-failed", tattooHandled
+    end
+    return false, tattooHandled and "unavailable" or "not-applied", tattooHandled
+end
+
+local function ReapplyTattooPolicy(reason)
+    local pv = EnsurePV()
+    local refreshed, deferred, current = 0, 0, 0
+    for char, rec in pairs(pv.Bodies or {}) do
+        local choice = rec.Choice
+        if choice == "sbbf" or choice == "bcb" then
+            local entity = GetEntity(char)
+            if entity == nil then
+                Log(("ReapplyTattooPolicy: %s unavailable (choice=%s); record retained for load reconciliation.")
+                    :format(tostring(char), tostring(choice)))
+            else
+                local race, bt, bs
+                pcall(function() race, bt, bs = Shared.ReadCharStats(entity) end)
+                if TattooPolicy.IsHumF(race, bt, bs) then
+                    local vr, ccsv, tattooHandled = ResolveBodyVr(choice, race, bt, bs)
+                    local bodyShouldRender = ShouldRenderNakedBody(char)
+                    local _, result = ApplyNakedBody(
+                        char, choice, rec, vr, ccsv, tattooHandled, bodyShouldRender)
+                    if result == "base-written" or result == "ccsv-written" then
+                        refreshed = refreshed + 1
+                    elseif result == "deferred" then
+                        deferred = deferred + 1
+                    elseif result == "base-current" then
+                        current = current + 1
+                    elseif result == "ccsv-failed" then
+                        Warn(("ReapplyTattooPolicy: validated tattoo CCSV application failed for %s (choice=%s).")
+                            :format(tostring(char), tostring(choice)))
+                    elseif result == "unavailable" then
+                        Warn(("ReapplyTattooPolicy: validated tattoo pair unavailable for %s (choice=%s).")
+                            :format(tostring(char), tostring(choice)))
+                    end
+                end
+            end
+        end
+    end
+    Log(("ReapplyTattooPolicy(%s): refreshed=%d deferred=%d current=%d."):format(
+        tostring(reason), refreshed, deferred, current))
+    return refreshed, deferred
+end
+
+local function SetBodyTattooPolicy(policy, source)
+    if policy ~= "match" and policy ~= "hide" then
+        Warn(("Body tattoo policy rejected: invalid enum '%s' from %s."):format(
+            tostring(policy), tostring(source)))
+        return false
+    end
+    local pv = EnsurePV()
+    local old = pv.BodyTattooPolicy
+    if old == policy then
+        Log(("Body tattoo policy unchanged at '%s' (%s); no reapply."):format(
+            tostring(policy), tostring(source)))
+        return false
+    end
+    PersistentVars.BodyTattooPolicy = policy
+    Log(("Body tattoo policy: '%s' -> '%s' (%s)."):format(
+        tostring(old), tostring(policy), tostring(source)))
+    ReapplyTattooPolicy(source)
+    return true
+end
+
 -- SetDesiredBody(char, choice): record the player's pick (what to show when
 -- nude) then Reconcile so it only renders if the torso is bare. This is the
 -- clothing-aware path used by !cm_setbody.
@@ -711,29 +979,25 @@ local function SetDesiredBody(char, choice)
     local entity = GetEntity(char)
     local race, bt, bs
     pcall(function() race, bt, bs = Shared.ReadCharStats(entity) end)
-    local vr, ccsv = ResolveBodyVr(choice, race, bt, bs)
+    local vr, ccsv, tattooHandled = ResolveBodyVr(choice, race, bt, bs)
     local mapKey
-    if ccsv == nil then ccsv, mapKey = Shared.ResolveCcsv(choice, race, bt, bs) end
+    if ccsv == nil and not tattooHandled then ccsv, mapKey = Shared.ResolveCcsv(choice, race, bt, bs) end
     -- v4.15 PRIMARY: re-point the base body (Outcome C). On success the CCSV
     -- overlay is retired for this character (single-body render).
-    if MECHANISM == "C" and vr ~= nil then
-        local okBase = SetBaseBody(char, choice, vr)
-        if okBase then
-            rec.Choice = choice
-            if rec.AppliedCcsv ~= nil or rec.DesiredCcsv ~= nil then
-                StripOurOverride(char)
-                rec.AppliedCcsv, rec.DesiredCcsv = nil, nil
-            end
-            okNude = true
-        end
-    end
+    okNude = ApplyNakedBody(char, choice, rec, vr, ccsv, tattooHandled, nil)
     -- FALLBACK (mechanism off / no CV / write rejected / unmapped): the proven
     -- v4.13 CCSV overlay path, unchanged.
     if not okNude then
         if ccsv == nil then
-            Warn(("SetDesiredBody: no CCSV mapped for key '%s' (race=%s bt=%s bs=%s) - "
-                .. "nude half SKIPPED; attempting clothed half."):format(
-                tostring(mapKey), tostring(race), tostring(bt), tostring(bs)))
+            if tattooHandled then
+                Warn(("SetDesiredBody: validated tattoo pair unavailable; nude half skipped "
+                    .. "(choice=%s race=%s bt=%s bs=%s); attempting clothed half."):format(
+                    tostring(choice), tostring(race), tostring(bt), tostring(bs)))
+            else
+                Warn(("SetDesiredBody: no CCSV mapped for key '%s' (race=%s bt=%s bs=%s) - "
+                    .. "nude half SKIPPED; attempting clothed half."):format(
+                    tostring(mapKey), tostring(race), tostring(bt), tostring(bs)))
+            end
         else
             rec.Choice = choice
             rec.DesiredCcsv = ccsv
@@ -757,7 +1021,7 @@ end
 -- ---------------------------------------------------------------------------
 -- ApplyBody(char, choice): map choice (sbbf|bcb|vanilla) -> CCSV via Shared and
 -- apply it. "vanilla"/unmapped -> revert. Needs CCSV_MAP populated (and, for our
--- own bodies, the ClothMorphContent VisualBank pak loaded so the CCSV resolves).
+-- own bodies, the ClothMorphRuntime VisualBank pak loaded so the CCSV resolves).
 -- ---------------------------------------------------------------------------
 local function ApplyBody(char, choice)
     -- DEBUG-only nude-CCSV helper (exposed as MOD.ApplyBody); NOT wired to any
@@ -773,7 +1037,7 @@ local function ApplyBody(char, choice)
     local ccsv, mapKey = Shared.ResolveCcsv(choice, race, bt, bs)
     if ccsv == nil then
         Warn(("ApplyBody: no CCSV mapped for key '%s' (race=%s bt=%s bs=%s). "
-            .. "Populate CCSV_MAP / load ClothMorphContent."):format(
+            .. "Populate CCSV_MAP / load ClothMorphRuntime."):format(
             tostring(mapKey), tostring(race), tostring(bt), tostring(bs)))
         return false
     end
@@ -1103,6 +1367,46 @@ Ext.RegisterConsoleCommand("cm_seterace",     Cmd_SetERace)
 Ext.RegisterConsoleCommand("cm_sharedprobe",  Cmd_SharedProbe)
 Ext.RegisterConsoleCommand("cm_sharedapply",  Cmd_SharedApply)
 
+local function MakeTattooProbeDeps()
+    return {
+        getEntity = GetEntity,
+        getStaticData = function(guid, kind) return Ext.StaticData.Get(guid, kind) end,
+        getAllStaticData = function(kind) return Ext.StaticData.GetAll(kind) end,
+        getResource = function(guid, kind) return Ext.Resource.Get(guid, kind) end,
+        getLoadedMod = function(uuid) return Ext.Mod.GetMod(uuid) end,
+        readCharStats = Shared.ReadCharStats,
+        getBodyChoice = function(char)
+            local bodies = type(PersistentVars) == "table" and PersistentVars.Bodies or nil
+            local rec = type(bodies) == "table" and bodies[char] or nil
+            return type(rec) == "table" and rec.Choice or nil
+        end,
+        getPolicy = function()
+            return type(PersistentVars) == "table" and PersistentVars.BodyTattooPolicy or nil
+        end,
+        detectEnvironment = function()
+            return TattooPolicy.DetectEnvironment(function(uuid) return Ext.Mod.GetMod(uuid) end)
+        end,
+        getVariantRows = TattooPolicy.DescribeVariants,
+        vanillaRows = {
+            {
+                key = "vanilla|forced|match", bodyChoice = "vanilla",
+                environment = "forced", policy = "match",
+                vr = "3bc12bd9-6c5e-5067-a20f-b17e45647a10", ccsv = nil,
+            },
+        },
+    }
+end
+
+TattooDiagnostics.Register({
+    register = function(name, handler) Ext.RegisterConsoleCommand(name, handler) end,
+    resolveCharacter = ResolveCommandChar,
+    log = Log,
+    warn = Warn,
+    policy = TattooPolicy,
+    probe = TattooStateProbe,
+    makeProbeDeps = MakeTattooProbeDeps,
+})
+
 -- ===========================================================================
 -- NET CHANNEL -- client-context console commands forward intent to the server.
 -- ===========================================================================
@@ -1121,6 +1425,16 @@ local function DispatchNetCmd(a, b, c)
     local data, user = NetMessageArgs(a, b, c)
     data = data or {}
     local cmd = data.cmd
+    if cmd == "mcm_set_tattoo_policy" then
+        if not AuthorizeTattooPolicyUser(user) then return end
+        if data.arg ~= "match" and data.arg ~= "hide" then
+            Warn(("Tattoo policy network update denied: invalid enum '%s'."):format(
+                tostring(data.arg)))
+            return
+        end
+        SetBodyTattooPolicy(data.arg, "network")
+        return
+    end
     local char = nil
     if cmd ~= "erpass" then
         char = ResolveNetTarget(data, user)
@@ -1237,6 +1551,8 @@ end)
 --   stack). We only normalize PersistentVars here.
 -- ===========================================================================
 Ext.Events.SessionLoaded:Subscribe(function()
+    -- v1.3: one-shot check for the retired standalone Githyanki add-on.
+    pcall(function() EquipRace.HasLegacyGithyankiPak() end)
     EnsurePV()
     -- BCBPak presence probe (2026-07-26, Alan's rule). Resolved ONCE here inside
     -- the existing handler -- no new subscription, no per-tick cost. Must run
@@ -1282,7 +1598,10 @@ end)
 -- (EquipRace.ReapplyAll is idempotent: it skips chars already on the minted GUID.)
 local MCM_DEPS = { Log = Log, Warn = Warn, IsValid = Shared.IsValidBodyChoice,
                    ResolveMcmTarget = function() return nil end,
-                   SetDesiredBody = SetDesiredBody }
+                   SetDesiredBody = SetDesiredBody,
+                   AuthorizeTattooPolicy = AuthorizeMcmTattooPolicy,
+                   RestoreTattooPolicy = RestoreMcmTattooPolicy,
+                   SetBodyTattooPolicy = SetBodyTattooPolicy }
 pcall(function()
     Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(_level, _isEditor)
         local pv = EnsurePV()
@@ -1294,7 +1613,7 @@ pcall(function()
         pcall(function() ReapplyBaseBodies("LevelGameplayStarted") end)
         -- v4.10: flush any queued external (add-on) refit entries BEFORE reapply.
         pcall(function() EquipRace.RetryPendingExternalRefits() end)
-        -- v4.13 F1: verify the ClothMorphContent VisualBank is actually present.
+        -- v4.13 F1: verify the ClothMorphRuntime VisualBank is actually present.
         -- If absent, base-map refits would resolve to nothing (invisible gear);
         -- CheckContentPresence flips a safe pass-through flag + forces a re-pass
         -- so gear renders vanilla-shaped (visible) instead, and warns loudly.
@@ -1350,6 +1669,7 @@ RegisterExternalRevealing = function(ids)
     return n > 0
 end
 
-Log("BootstrapServer v4.19 loaded (BASE-BODY mechanism [Outcome C] primary + CCSV fallback + conditional-strip + baked-body exclusion + MCM hotkeys + external-source provenance + content-presence guard + BCBPak presence gate + class-1 vanilla clones [74; Moonshadow fix: 84195a60/54bc906f/238f0743 reverted to passthrough] + Moonshadow SBBF opt-out removed -> Body/Pants remap to SBBF clones + v4.19 HOTFIX: vanilla mode FORCES the true-vanilla body [minted VR 3bc12bd9] instead of restore-original). Commands: !cm_setbody <vanilla|sbbf|bcb> | !cm_cyclebody |"
+Log("BootstrapServer v4.21 loaded (BASE-BODY mechanism [Outcome C] primary + CCSV fallback + conditional-strip + baked-body exclusion + MCM hotkeys + external-source provenance + content-presence guard + BCBPak presence gate + class-1 vanilla clones [74; Moonshadow fix: 84195a60/54bc906f/238f0743 reverted to passthrough] + Moonshadow SBBF opt-out removed -> Body/Pants remap to SBBF clones + v4.19 HOTFIX: vanilla mode FORCES the true-vanilla body [minted VR 3bc12bd9] instead of restore-original + v4.20: Githyanki true-vanilla body too [a4891ad7] + v1.3: ONE main pak -- Githyanki bodies and all base-game clothing merged in, ClothMorphContent and the Githyanki add-on retired, class-1 SBBF pass [32 VRs / 18 meshes]). Commands: !cm_setbody <vanilla|sbbf|bcb> | !cm_cyclebody |"
     .. "!cm_setclothed <vanilla|sbbf> | !cm_seterace <guid> | !cm_erpass [force] | !cm_erstatus | !cm_refresh | "
-    .. "!cm_applyccsv <ccsvGuid> | !cm_revert | !cm_status | !cm_checkbody | !cm_findoverride. Hotkeys: bind in MCM (unbound by default).")
+    .. "!cm_applyccsv <ccsvGuid> | !cm_revert | !cm_status | !cm_checkbody | !cm_findoverride | !cm_tattootest | "
+    .. "!cm_tattoodump [character-guid] (server only). Hotkeys: bind in MCM (unbound by default).")

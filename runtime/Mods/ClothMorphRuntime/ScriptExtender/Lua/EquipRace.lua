@@ -92,7 +92,7 @@ local PARENT = {
 -- ---------------------------------------------------------------------------
 -- REFIT_BY_VR - generalized refit map (2026-07-05, generalization phase).
 -- Key   : vanilla VisualResource GUID (lowercase) that has an SBBF-refit mesh.
--- Value : minted refit VisualResource GUID (in ClothMorphContent's combined
+-- Value : minted refit VisualResource GUID (in ClothMorphRuntime's combined
 --         VisualBank [PAK]_ClothMorph_Refits/_merged.lsf).
 -- The injector copies each item's Human-Female Visuals array and, for every
 -- entry whose VR id is a key here, swaps in the refit VR id. Keyed PER VR (not
@@ -607,6 +607,38 @@ M.REFIT_BY_VR = {
         ["9096cac7-7d3e-917d-47ca-5cd6998c0886"] = "b7703829-5ee2-563b-94b9-5a2d1c3ed002",  -- HUM_F_CLT_Tunic_Torn_C
     },
     sbbf = {
+        ["4c6a422a-6512-fa86-658c-30e99406f943"] = "b9d0176c-2992-52f0-bc4f-558d5a72ae2b", -- HUM_F_CLT_Camp_Citizen_Shirt_B [class-1 SBBF v1.3]
+        ["6682ffad-1f04-3e05-660f-6d20c8c3772c"] = "75724a54-824a-57c6-8940-314230eb3505", -- HUM_F_CLT_Camp_Shirt_A [class-1 SBBF v1.3]
+        ["7d2ea148-347c-d31a-2f54-2e4ea0401b6a"] = "01253f60-0c6e-53e8-abff-c1587fa7b864", -- HUM_F_CLT_Camp_Shirt_B [class-1 SBBF v1.3]
+        ["76879699-6811-451d-316b-d67a8824fc98"] = "c54d4105-49ce-5c13-9690-fc0901089c76", -- HUM_F_CLT_Camp_Shirt_C [class-1 SBBF v1.3]
+        ["d600fd55-1a80-25fd-98d4-aaddfdb3b90d"] = "745537f2-8c3b-5385-9d12-ccc48fbaf88e", -- HUM_F_CLT_Camp_Shirt_D [class-1 SBBF v1.3]
+        ["9bdc9e17-7f4d-d3ff-1e29-04c93d39bdb1"] = "b39be5a3-7121-5433-b298-1ba8f1df4bf4", -- HUM_F_CLT_Camp_Shirt_E [class-1 SBBF v1.3]
+        ["31428c0b-7f8b-a6e1-3272-558b2ffd7a83"] = "2bc15abe-7adf-52d4-b57d-188ba1c16f82", -- HUM_F_CLT_Circus_Jacket_A [class-1 SBBF v1.3]
+        ["48d6a6c4-0570-2436-492a-f93c8e787d01"] = "9f13e783-3c85-5a92-abf5-8fddc3f76aa6", -- HUM_F_CLT_Circus_Shirt_A [class-1 SBBF v1.3]
+        ["48375b27-db2a-cd01-9de1-4245a3811a07"] = "5dec0b16-bcdc-54d0-af6c-50c84b887583", -- HUM_F_CLT_Circus_Shirt_B [class-1 SBBF v1.3]
+        ["3f331b5d-6ec3-2600-1e3b-d5746a88af7d"] = "8de34b7e-19bb-542e-aa2b-a039d1f37f8e", -- HUM_F_CLT_Circus_Shirt_B_1 [class-1 SBBF v1.3]
+        ["89fc2d48-e474-e859-5fa2-f3f47c35962d"] = "512eb217-c79d-575e-aa11-dfb7f396970f", -- HUM_F_CLT_Circus_Shirt_C [class-1 SBBF v1.3]
+        ["9e81a487-2468-347d-9d7e-ee35282448f8"] = "dd6a373a-6832-5773-b776-364924930e5c", -- HUM_F_CLT_Circus_Shirt_J [class-1 SBBF v1.3]
+        ["f62105ae-2388-54c6-e834-31f490df7b49"] = "d4a84269-8bd5-5d52-874f-dc1d63a1bcd1", -- HUM_F_CLT_Circus_Shirt_K [class-1 SBBF v1.3]
+        ["d4fd883c-1370-e111-736e-67dfbab7139f"] = "dc587b4e-8023-5adb-beca-449d19507b20", -- HUM_F_CLT_Daisy_Playsuit_A [class-1 SBBF v1.3]
+        ["edf95138-e356-5a4f-3a2d-e2cbc07c33c0"] = "f89c9310-73e9-5e15-9700-9b7cbb76891d", -- HUM_F_CLT_Doublet_A [class-1 SBBF v1.3]
+        ["66de53c5-2170-c8c2-9061-a411d5e256ea"] = "515892be-c24b-5452-a08b-1c7cedf1715b", -- HUM_F_CLT_Doublet_Rich_A [class-1 SBBF v1.3]
+        ["66fe0115-ae82-854c-6501-b32c4032c448"] = "7c60decb-29f9-5435-8eed-261313dadd90", -- HUM_F_CLT_Doublet_Rich_B [class-1 SBBF v1.3]
+        ["737e78a2-3317-8d01-48a8-0a6ba0a8fb3c"] = "b08f1309-0a50-55cc-b369-c11152cb5f08", -- HUM_F_CLT_Doublet_Torn_A [class-1 SBBF v1.3]
+        ["8b303896-afc6-36b0-d25a-70e8cbd0cd7f"] = "2f80a27d-56a3-5bb0-93c5-8c48e7051d47", -- HUM_F_CLT_Humans_Shirt_A [class-1 SBBF v1.3]
+        ["73c1e8f2-a765-eab5-011f-350a7f2ef33b"] = "617b233b-571e-5158-a3d6-a5d8df3944a3", -- HUM_F_CLT_Humans_Shirt_A2 [class-1 SBBF v1.3]
+        ["01e718e9-8992-312f-dc73-082846ac972e"] = "2cc6e9bb-fdb7-5acd-97dd-98a74f4eabee", -- HUM_F_CLT_Refugees_Jacket [class-1 SBBF v1.3]
+        ["20e07fc7-8550-069f-7271-db030aec1a3c"] = "019ba569-6892-571b-bad0-32165802cab8", -- HUM_F_CLT_Refugees_Shirt_A [class-1 SBBF v1.3]
+        ["a5512e5f-3b52-2c29-d19d-fe6465c5819e"] = "39c99768-042d-58b1-93a2-66bf80a54a41", -- HUM_F_CLT_Refugees_Shirt_A_1 [class-1 SBBF v1.3]
+        ["94e1c917-9b46-afa4-6733-e0daff97ae98"] = "cce6f4b0-e26d-5916-83b1-595bd90393d9", -- HUM_F_CLT_Refugees_Shirt_B [class-1 SBBF v1.3]
+        ["436e0c5c-826b-5686-d6f0-b98503bf5a8d"] = "4183f434-1c21-57a5-8b52-8dfd241631f3", -- HUM_F_CLT_Rich_Shirt_A_Trim_A [class-1 SBBF v1.3]
+        ["cf140f3e-d8aa-137c-659d-047f0fe80de3"] = "9432d874-6d86-5edf-abd5-277d448226ad", -- HUM_F_CLT_Rich_Shirt_A_Trim_B [class-1 SBBF v1.3]
+        ["f156291e-fcf6-ff37-9e89-cd83abf3cc15"] = "19495d95-1514-5a68-9d89-808f9f4cb7e2", -- HUM_F_CLT_Shirt_A [class-1 SBBF v1.3]
+        ["c1e76ac0-21f2-4e6b-265e-5ca4ed03ca27"] = "0014b90e-dbcf-582e-bb42-7d9d38d367f0", -- HUM_F_CLT_Shirt_B [class-1 SBBF v1.3]
+        ["bd02a60a-3bae-98e2-435f-60c1580c2a90"] = "7e8dc32d-a468-57b2-b5b7-1762c85e8ba7", -- HUM_F_CLT_Shirt_D [class-1 SBBF v1.3]
+        ["9a04af56-0092-cc5b-8940-6c848b7da5d0"] = "91ac2368-9cfb-5bca-8f5c-1e4566a3fc70", -- HUM_F_CLT_Shirt_E [class-1 SBBF v1.3]
+        ["ad195e3f-8399-f77a-b999-a1ca70f1040d"] = "a1810876-812a-59bd-9d59-921e83a659d7", -- HUM_F_CLT_Shirt_J [class-1 SBBF v1.3]
+        ["1a6ded21-70a7-a64d-8a3e-bd2b4118849e"] = "485d14b2-3e89-5b54-9915-c47047db3463", -- HUM_F_CLT_Shirt_Torn_A [class-1 SBBF v1.3]
         ["02964f77-c398-423b-a5e9-f7810243811c"] = "7a9547fe-98e0-5256-bbc1-557f76e50aaf", -- HUM_F_ARM_Adventurer_Body_A [GLB]
         ["ed8e5366-bfa5-91c4-9eae-9ef39f402214"] = "bf9c1d6d-cc14-57d6-95ec-179e95ea1d07", -- HUM_F_ARM_Astarion_Body [GLB]
         ["7187c0c1-3752-5d43-9858-7b72fdb0fa3c"] = "7e774abe-ba83-517f-886b-d0e816da508e", -- HUM_F_ARM_Astarion_Pants [GLB]
@@ -1450,7 +1482,7 @@ M.REFIT_BY_VR = {
 --
 -- NOT GATED (1) -- `sbbf` / `bcb`. ClothMorph's OWN refits, shipped whole in base
 -- Content. Verified 2026-07-26: [PAK]_ClothMorph_Refits and _Refits_BCB reference
--- only Generated/Public/ClothMorphContent; zero BCBPak vpaths. The BCB body SHAPE
+-- only Generated/Public/ClothMorphRuntime; zero BCBPak vpaths. The BCB body SHAPE
 -- is a base feature that must keep working for users who do not own BCBPak.
 -- ("the BCB part" is ambiguous between the BCBPak ADD-ON and the BCB body MODE;
 -- only the former depends on BCBPak.)
@@ -1533,6 +1565,38 @@ function M.HasBCBPak()
     return bcbpakPresent
 end
 
+-- ---------------------------------------------------------------------------
+-- v1.3: the standalone Githyanki add-on was RETIRED -- its bodies now ship
+-- inside this main pak. If a user upgrades without deleting the old pak, both
+-- define the same VisualResource GUIDs. Characterised as benign (the old pak
+-- loads later, so its banks win, and its own GR2s are still in it, so every
+-- SourceFile resolves) -- but it means the user silently keeps the OLD bodies
+-- and would never get the v1.3 fixes. So: warn, do not stand down.
+M.GITHYANKI_LEGACY_UUID = "f268e48d-1718-5489-a6f7-a55c5e2bf264"
+local gthLegacy, gthWarned = nil, false
+function M.HasLegacyGithyankiPak()
+    if gthLegacy ~= nil then return gthLegacy end
+    local want, found, seen = M.GITHYANKI_LEGACY_UUID:lower(), false, 0
+    local ok = pcall(function()
+        for _, u in ipairs(Ext.Mod.GetLoadOrder() or {}) do
+            seen = seen + 1
+            if tostring(u):lower() == want then found = true; break end
+        end
+    end)
+    -- Fail-safe INVERTED vs HasBCBPak: a probe failure must not produce a false
+    -- warning about a pak the user may not have. Not cached -- retry later.
+    if not ok or seen == 0 then return false end
+    gthLegacy = found
+    if found and not gthWarned then
+        gthWarned = true
+        Warn("The standalone 'Body and Clothing Morph - Githyanki Bodies' add-on "
+             .. "(ClothMorphGithyanki.pak) is still installed. Its bodies are now built "
+             .. "into the main pak; the old add-on overrides them and you will not get "
+             .. "the v1.3 Githyanki fixes. Please remove ClothMorphGithyanki.pak.")
+    end
+    return gthLegacy
+end
+
 -- Test/console hook (!cm_bcbpak). nil clears the cache so the next call
 -- re-probes. Changing the value re-runs the vanilla pass, because arrays already
 -- injected under the minted key are otherwise stale and InjectTemplate's
@@ -1603,7 +1667,7 @@ end
 -- VisualResource id that has a refit (REFIT_BY_VR) for its minted refit id.
 -- Per-VR keying => materially correct even when a GR2 is shared by multiple VRs.
 -- templateId kept in the signature for logging/back-compat; not used for matching.
--- F1 (v4.13): set true only when CheckContentPresence proves the ClothMorphContent
+-- F1 (v4.13): set true only when CheckContentPresence proves the ClothMorphRuntime
 -- VisualBank is absent. Default false => BuildArray behaves EXACTLY as before
 -- (zero change in the normal, content-present case).
 M._ContentAbsent = false
@@ -1665,7 +1729,7 @@ local function BuildArray(choice, templateId, srcArr)
     return out, isRefit
 end
 
--- F1 (v4.13): confirm ClothMorphContent's VisualBank is actually loaded. The
+-- F1 (v4.13): confirm ClothMorphRuntime's VisualBank is actually loaded. The
 -- base refit map points at minted VRs that live in that pak; if the user
 -- disabled/removed it, injected refits resolve to nothing => invisible gear.
 -- Called from BootstrapServer's LevelGameplayStarted (resources guaranteed
@@ -1683,15 +1747,15 @@ function M.CheckContentPresence()
     end
     M._ContentAbsent = (probed > 0 and resolved == 0)
     if M._ContentAbsent then
-        Warn("ClothMorphContent VisualBank NOT found (probed " .. tostring(probed)
+        Warn("ClothMorphRuntime VisualBank NOT found (probed " .. tostring(probed)
             .. " base-map refit ids, 0 resolved). Clothing refits DISABLED to avoid "
             .. "invisible gear - garments keep their original (vanilla) look. Enable/"
-            .. "install the ClothMorphContent pak and load it below ClothMorphRuntime.")
+            .. "install the main Body and Clothing Morph pak.")
         for choice in pairs(M.MINTED or {}) do
             pcall(function() M.RunBlanketPass(choice, true) end)
         end
     else
-        Log(("ClothMorphContent presence OK (probed %d base-map ids, %d resolved).")
+        Log(("ClothMorphRuntime presence OK (probed %d base-map ids, %d resolved).")
             :format(probed, resolved))
     end
     return not M._ContentAbsent

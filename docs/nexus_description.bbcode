@@ -1,145 +1,62 @@
-[center][size=6][b]Body and Clothing Morph for SBBF and BCB — v1.2[/b][/size]
-[i]Pick a female body shape per character — Vanilla, SBBF, or BCB — and your armor or clothing refits to match.[/i][/center]
+[center][size=5][b]Body and Clothing Morph for SBBF and BCB - v1.3[/b][/size][/center]
 
-[b]Update — New in v1.2:[/b] the BCB clothing add-on (154 BCB garments morphed so they fit Vanilla and SBBF bodies), [b]Githyanki support[/b] (Githyanki including Lae'zel can now morph, via a bundled add-on), and [b]improved SCO fits on SBBF[/b] (the chest-opening now grows with the bust). [i](v1.1 added Drow and Half-Drow Tav/Durge support.)[/i] Also new — [b]improved compatibility with SBBF and BCB:[/b] you can now change party-member bodies even with those mods installed. An External Designer Clothing add-on (outfits from several permission-cleared clothing mods), Tiefling support, and more and better BCB and SCO morphs are in progress for a future update.
+[size=4][b]New tattoo bleedthrough fix - set this first[/b][/size]
 
-[i]Note: this mod adapts existing textures and meshes on garments and bodies — with permission where the items were previously modded. It contains no original garment textures or body meshes. Many thanks to the mod authors whose permissions made this possible; see Credits.[/i]
+v1.3 fixes the SBBF/BCB body-tattoo bleedthrough and incorrect-atlas behavior confirmed in the tested KAVT NVP/non-VT setup.
 
-[b]FAQ:[/b] see the pinned post in the comments.
-[b]Source:[/b] https://github.com/Shiney1965/BG3-Body-and-Clothing-Morph
-
-[line]
-
-[size=5][b]Overview[/b][/size]
-
-Body and Clothing Morph lets you choose a vanilla, SBBF or BCB female body shape per character and applies it to the currently controlled character. The choice is stored per character in your save game and persists across save/load. If you are wearing a garment (torso clothing or armor) covered by the mod, your equipped clothing or armor is automatically refitted to the selected body. Almost all garments shipping with the vanilla game are covered, plus others. You can change the shape three ways: the [b]MCM[/b] (Mod Configuration Menu) UI, [b]console commands[/b] (e.g. [font=Courier New]!cm_setbody vanilla|sbbf|bcb[/font]), or optional [b]hotkeys[/b].
-
-[line]
-
-[size=5][b]What's included (garment counts)[/b][/size]
-
-This build covers the following. Full per-garment included/excluded lists are in [b]GARMENT_LISTS_v1.2.md[/b] (shipped alongside this file).
-
+After installation, open MCM and find [b]SBBF/BCB body tattoos[/b]:
 [list]
-[*][b]Base-game garments — Vanilla / SBBF / BCB (ClothMorphContent):[/b] about [b]405[/b] base-game garment refit meshes, each fitted to the Vanilla, SBBF, and BCB body, plus [b]74[/b] clean-vanilla clones (revealing tops given a proper covered Vanilla version).
-[*][b]BCB.pak (from Sindae) add-on (ClothMorphBCB):[/b] [b]154[/b] garments from Sindae's BCB.pak, morphed to fit Vanilla and SBBF (they keep their native fit on the BCB body). [b]27[/b] of the 181 scoped BCB garments are excluded (a complex-mesh conversion limitation) and are candidates for a future update.
-[*][b]Scantily Camp Outfits (SCO) add-on (ClothMorphSCO):[/b] [b]76[/b] SCO garment meshes. The v1.2 chest-aperture fix improves the SBBF fit on [b]58[/b] of them; the remaining [b]18[/b] keep their prior look (mostly unconvertible meshes). Additional improvements are in progress for the next version.
-[*][b]Githyanki add-on (ClothMorphGithyanki):[/b] brings the body switch and clothing refits to Githyanki females, including [b]Lae'zel[/b].
+[*][b]Match Vanilla[/b] - default. Preserves the character's saved tattoo selection and applies compatible tattoo material behavior to naked SBBF and BCB bodies.
+[*][b]Hide on SBBF/BCB[/b] - hides the body tattoo on naked SBBF and BCB bodies while leaving Vanilla and the saved tattoo selection untouched.
 [/list]
 
-[line]
+[b]Both modes, including switching between them, passed the v1.3 release gameplay smoke test.[/b]
 
-[size=5][b]Features[/b][/size]
+[size=4][b]What the mod does[/b][/size]
 
+Choose [b]Vanilla, SBBF, or BCB per character[/b] and have supported clothing and armor refit with the selected body. Choices persist in the save and can be changed through MCM, hotkeys, or Script Extender console commands.
+
+[size=4][b]Also new in v1.3[/b][/size]
 [list]
-[*][b]BCB and SBBF mods are not required[/b] to run the basic version of this mod, but one or the other is compatible (in part) with this mod.
-[*][b]Per-character body shape[/b] — Vanilla / SBBF / BCB, applied to the controlled character and saved per character. In practice you can swap the body of your Tav or Durge if they use a human/elf/half-elf/drow/half-drow (BT1) body, and of [b]Shadowheart[/b] — and, as of v1.2, [b]Lae'zel[/b] through the included Githyanki add-on. Hirelings, Minthara, or an extra Tav/Durge from another mod should also be covered by the mod if they use the right body type (not thoroughly tested). If you run the standalone BCB or SBBF body mods, that mod governs every BT1 human-type character other than your Tav/Durge — but you should be able to control the body of any player-controlled character with this mod.
-[*][b]Automatic clothing/armor refit[/b] to the chosen body.
-[*][b]BCB clothing add-on[/b] — morphs 154 BCB outfits so they fit Vanilla and SBBF too (native BCB fit retained).
-[*][b]Githyanki support[/b] — the body switch and refits for Githyanki females (Lae'zel).
-[*][b]Improved SCO on SBBF[/b] — fixes the "chest opening doesn't grow with the bust" problem; garments that couldn't be validated keep their previous look.
-[*][b]MCM configuration UI[/b] — a "Body shape" radio picker.
-[*][b]Console commands[/b] — [font=Courier New]!cm_setbody[/font], plus diagnostics.
-[*][b]Optional hotkeys[/b] via MCM keybindings (cycle + direct-set), all unbound by default — you bind them yourself.
-[*][b]Permission-flag system[/b] letting other clothing-mod authors opt their items in (see [i]For mod authors[/i]).
-[*][b]Compatible with BCB and SBBF[/b] — and unlike earlier versions, you can change the body of any character while you control it, including eligible companions, overriding the body those mods set.
-[*]Please report any questions or problems — and if you like the mod, please endorse it.
+[*]Corrects BCB faceting on six SCO meshes: Scalemail Armor, Scalemail Armor Alt, Soul Vest, Soul Vest Alt, Soul Vest Type C, and Soul Vest Type D. All six passed Alan's gameplay check.
+[*]Consolidates the old five-PAK layout into three PAKs. The required Runtime now includes the body switcher, base-game garments, Githyanki support, and tattoo fix.
+[*]Adds proper SBBF meshes for 32 camp-clothing variants backed by 18 meshes.
+[*]Extends the SCO tightening pass to BCB as well as SBBF: 2,187 recorded problem vertices fell to 122 across 33 comparable garments, a 94.4% reduction.
 [/list]
 
-[b]Incompatibilities:[/b] Any mod that changes bodies or clothing may be incompatible. The mod is most reliable for base-game clothing in a game without the original BCB mod or SBBF mod separately loaded, and without any other body-changing mod. Most modded garments are not supported at this time (they may still work, and if made for the BCB or SBBF body will probably fit that body). SCO and the full BCB.pak (Sindae) clothing catalog are partially covered by their add-ons (each with a short exclusion list — see the garment lists).
+[size=4][b]Upgrading from v1.2.x[/b][/size]
 
-[line]
+[b]Deactivate and remove the retired ClothMorphContent.pak and ClothMorphGithyanki.pak before installing v1.3.[/b] Their content is now inside ClothMorphRuntime.pak. Full instructions are included in the download.
 
-[size=5][b]Requirements (hard)[/b][/size]
-
+[size=4][b]Requirements[/b][/size]
 [list]
-[*][b]BG3 Mod Configuration Menu (MCM)[/b] — Nexus 9162, by Volitio/AtilioA — [b]v1.19 or newer[/b] (required for the hotkey feature).
-[*][b]BG3 Script Extender (BG3SE)[/b] — by Norbyte.
-[*][b]For the SCO add-on only:[/b] Scantily Clad Camp Outfits (SCO) by Crosscrusade — Nexus 2617. The Mod.io version will probably work as well.
-[*][b]For the BCB add-on only:[/b] BCB.pak by Sindae — Nexus 2351.
+[*]BG3 Mod Configuration Menu 1.19+
+[*]BG3 Script Extender
+[*]SCO add-on only: Scantily Clad Camp Outfits by Crosscrusade
+[*]BCB add-on only: BCBPak by Sindae
 [/list]
 
-Each add-on bundles only the fitted refit meshes; the garments themselves come from the game or source mod, so that source mod is required for that particular mod add-on. The base mod (which uses base-game garments) needs none of these additional mods.
-
-[line]
-
-[size=5][b]Soft requirements (optional / compatibility — for the base mod)[/b][/size]
-
+[size=4][b]Downloads[/b][/size]
 [list]
-[*][b]SBBF — Stylized Beautiful Body for Female[/b] (Nexus 4864, FredKarrera) + its [b]Vanilla Outfits Patch[/b] (Nexus 5040) — for SBBF bodies on NPCs and SBBF-only clothing. (Note that clothing will not morph for other body types.)
-[*][b]BCB by Sindae[/b] (Nexus 2351) — for the BCB body on NPCs and BCB-only clothing designed by Sindae. (Note only some of that clothing will morph for other body types.)
+[*][b]Main[/b] - required Runtime PAK and complete documentation.
+[*][b]SCO add-on[/b] - install only when Scantily Clad Camp Outfits is installed.
+[*][b]BCB add-on[/b] - install only when BCBPak is installed.
+[*][b]AIO[/b] - all three PAKs and complete documentation.
 [/list]
 
-[line]
+Load the ClothMorph modules [b]above BCB[/b]. Do not leave duplicate older ClothMorph PAKs in the Mods folder.
 
-[size=5][b]Installation & load order[/b][/size]
-
-Install the hard requirements, then install Body and Clothing Morph with your mod manager. [b]Load the ClothMorph paks ABOVE BCB.[/b] Component paks:
-
+[size=4][b]Known boundaries[/b][/size]
 [list]
-[*][b]ClothMorphRuntime[/b] — the engine / Script Extender logic.
-[*][b]ClothMorphContent[/b] — the Vanilla/SBBF refit meshes (~405) plus BCB support meshes.
-[*][b]ClothMorphBCB[/b] — the BCB clothing add-on (requires BCB, Nexus 2351).
-[*][b]ClothMorphSCO[/b] [i](optional)[/i] — the SCO add-on (requires SCO, Nexus 2617).
-[*][b]ClothMorphGithyanki[/b] — Githyanki female bodies and clothing (Lae'zel).
+[*]The successful visual tattoo test used KAVT NVP/non-VT. No-KAVT and KAVT VT have static coverage but were not separately gameplay-confirmed for this release.
+[*]Some unconvertible SCO garments still use their original mesh and may clip on SBBF/BCB.
+[*]Oathbreaker routes supplied by BCBScantily remain unresolved and are not part of Wave 03.
+[*]Tiefling females are not supported. Scope is the human-body female family and Githyanki females.
+[*]See the included known-issues and garment-list documents for the complete boundary.
 [/list]
 
-[line]
+[size=4][b]Credits and KAVT permission condition[/b][/size]
 
-[size=5][b]How to use[/b][/size]
+SBBF by FredKarrera. BCB and BCBPak by Sindae. Scantily Clad Camp Outfits by Crosscrusade. MCM by Volitio and contributors. BG3 Script Extender and Divine/LSLib by Norbyte.
 
-[list]
-[*][b]MCM:[/b] open the Mod Configuration Menu and use the "Body shape" radio picker (Vanilla / SBBF / BCB) for the controlled character.
-[*][b]Hotkeys:[/b] in MCM keybindings, bind the "cycle body" key and/or the direct-set keys. Unbound by default (requires MCM 1.19+).
-[*][b]Console:[/b] [font=Courier New]!cm_setbody vanilla|sbbf|bcb[/font], plus the diagnostic commands.
-[/list]
-
-[line]
-
-[size=5][b]Coverage & limitations (as of v1.2)[/b][/size]
-
-[list]
-[*][b]Base-game garments (Vanilla / SBBF / BCB):[/b] broad coverage (~405 garment meshes) plus the optional SCO add-on.
-[*][b]BCB add-on:[/b] 154 garments morphed to Vanilla/SBBF (native BCB fit retained); 27 excluded — see the garment lists.
-[*][b]SCO on SBBF:[/b] substantially improved (the chest-aperture fix); 18 garments keep their prior look.
-[*][b]Vanilla-mode note:[/b] [i]Some garments from Sindae's BCB.pak may appear too large in Vanilla mode, resulting in partial nudity.[/i] These use Sindae's revealing BCB designs; Vanilla and SBBF are otherwise broadly covered.
-[*][b]Revealing BCB designs:[/b] in BCB mode, some vanilla armours render Sindae's own revealing BCB look (e.g. a chest-cutout). That is the BCB art, by design.
-[*][b]Items outside the covered sets pass through unchanged[/b] — that is by design. For example, [i]Mercenary Armor[/i] is a vanilla item this mod does not cover, so it looks the same in all modes; the body still morphs, only that armor is out of scope.
-[*][b]Nightsong's Armor[/b] renders nude on the player because it is Aylin's NPC armor (no proper player-body visual) — a base-game/source limitation, not a morph defect.
-[*][b]Moonshadow Armor (SBBF):[/b] shows the leather body and pants correctly; its small decorative top layer is absent when BCB (BCBPak) is installed (scheduled for a proper fit in a future update).
-[*][b]Draped/slinky dresses on BCB[/b] conform only approximately (a conservative reverse-deform, to avoid flattening the flare).
-[*][b]Baked-body garments[/b] (e.g. [i]Full Metal Dress[/i] / CorsetSkirtArm) keep their original BCB version by design.
-[*][b]Shar Leggings + Oathbreaker Heels[/b] is excluded (the morph does not apply in testing).
-[*][b]Body coverage:[/b] human/elf/half-elf/drow females (HUM_F), plus Githyanki females via the included add-on. [b]Tiefling[/b] females such as Karlach are not yet supported: with BCB (BCBPak) installed they always show the BCB body and cannot be set to Vanilla/SBBF; without BCBPak they stay vanilla. Tiefling support is planned.
-[*][b]Multiplayer[/b] support is limited/experimental.
-[/list]
-
-[line]
-
-[size=5][b]For mod authors[/b][/size]
-
-Clothing-mod authors can opt their items in to automatic refitting by shipping a small marker file, [b]ClothMorphPermission.json[/b], inside their pak (under [font=Courier New]Mods/<TheirModFolder>/[/font]). It records their permission, the credit line to show, and which bodies/items are in scope. No third-party assets are adapted without permission (posted or provided), and the author's credit line ships verbatim. Full spec in the mod's docs.
-
-[line]
-
-[size=5][b]Permissions[/b][/size]
-
-This mod is [b]FREE[/b] and must always stay free; it is not for sale. Donation Points are fine.
-
-[line]
-
-[size=5][b]Credits[/b][/size]
-
-[list]
-[*][b]Sindae[/b] — BCB (Nexus 2351) — body and clothing assets, used with permission. This mod's BCB support would not exist without Sindae's work.
-[*][b]FredKarrera[/b] — SBBF (Nexus 4864) and the Vanilla Outfits Patch (Nexus 5040).
-[*][b]Volitio / AtilioA[/b] — Mod Configuration Menu (Nexus 9162).
-[*][b]Norbyte[/b] — BG3 Script Extender.
-[*][b]Crosscrusade[/b] — Scantily Clad Camp Outfits (Nexus 2617), for the SCO add-on.
-[/list]
-
-[line]
-
-[size=5][b]AI disclosure[/b][/size]
-
-This mod was made with the assistance of Claude (Fable 5, Opus 5, Opus 4.8) for coding, including modifying garment meshes to fit alternative body shapes, and documentation drafting.  No textures or artwork were generated by AI. The concept, scope, steering, design, and significant architecture choices are the human author's, as is all in-game testing and debugging. (In other words — Claude is great, but it's still a helluva lot of work.)
+KAVT interoperability is credited to Kazstralities/Astralities/Kaz. No KAVT textures are bundled. The KAVT author permits asset use with credit and prohibits Donation Points when those assets are used; [b]Donation Points must remain disabled for this release[/b].

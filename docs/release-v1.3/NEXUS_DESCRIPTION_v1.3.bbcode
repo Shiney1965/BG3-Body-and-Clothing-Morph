@@ -1,0 +1,62 @@
+[center][size=5][b]Body and Clothing Morph for SBBF and BCB - v1.3[/b][/size][/center]
+
+[size=4][b]New tattoo bleedthrough fix - set this first[/b][/size]
+
+v1.3 fixes the SBBF/BCB body-tattoo bleedthrough and incorrect-atlas behavior confirmed in the tested KAVT NVP/non-VT setup.
+
+After installation, open MCM and find [b]SBBF/BCB body tattoos[/b]:
+[list]
+[*][b]Match Vanilla[/b] - default. Preserves the character's saved tattoo selection and applies compatible tattoo material behavior to naked SBBF and BCB bodies.
+[*][b]Hide on SBBF/BCB[/b] - hides the body tattoo on naked SBBF and BCB bodies while leaving Vanilla and the saved tattoo selection untouched.
+[/list]
+
+[b]Both modes, including switching between them, passed the v1.3 release gameplay smoke test.[/b]
+
+[size=4][b]What the mod does[/b][/size]
+
+Choose [b]Vanilla, SBBF, or BCB per character[/b] and have supported clothing and armor refit with the selected body. Choices persist in the save and can be changed through MCM, hotkeys, or Script Extender console commands.
+
+[size=4][b]Also new in v1.3[/b][/size]
+[list]
+[*]Corrects BCB faceting on six SCO meshes: Scalemail Armor, Scalemail Armor Alt, Soul Vest, Soul Vest Alt, Soul Vest Type C, and Soul Vest Type D. All six passed Alan's gameplay check.
+[*]Consolidates the old five-PAK layout into three PAKs. The required Runtime now includes the body switcher, base-game garments, Githyanki support, and tattoo fix.
+[*]Adds proper SBBF meshes for 32 camp-clothing variants backed by 18 meshes.
+[*]Extends the SCO tightening pass to BCB as well as SBBF: 2,187 recorded problem vertices fell to 122 across 33 comparable garments, a 94.4% reduction.
+[/list]
+
+[size=4][b]Upgrading from v1.2.x[/b][/size]
+
+[b]Deactivate and remove the retired ClothMorphContent.pak and ClothMorphGithyanki.pak before installing v1.3.[/b] Their content is now inside ClothMorphRuntime.pak. Full instructions are included in the download.
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*]BG3 Mod Configuration Menu 1.19+
+[*]BG3 Script Extender
+[*]SCO add-on only: Scantily Clad Camp Outfits by Crosscrusade
+[*]BCB add-on only: BCBPak by Sindae
+[/list]
+
+[size=4][b]Downloads[/b][/size]
+[list]
+[*][b]Main[/b] - required Runtime PAK and complete documentation.
+[*][b]SCO add-on[/b] - install only when Scantily Clad Camp Outfits is installed.
+[*][b]BCB add-on[/b] - install only when BCBPak is installed.
+[*][b]AIO[/b] - all three PAKs and complete documentation.
+[/list]
+
+Load the ClothMorph modules [b]above BCB[/b]. Do not leave duplicate older ClothMorph PAKs in the Mods folder.
+
+[size=4][b]Known boundaries[/b][/size]
+[list]
+[*]The successful visual tattoo test used KAVT NVP/non-VT. No-KAVT and KAVT VT have static coverage but were not separately gameplay-confirmed for this release.
+[*]Some unconvertible SCO garments still use their original mesh and may clip on SBBF/BCB.
+[*]Oathbreaker routes supplied by BCBScantily remain unresolved and are not part of Wave 03.
+[*]Tiefling females are not supported. Scope is the human-body female family and Githyanki females.
+[*]See the included known-issues and garment-list documents for the complete boundary.
+[/list]
+
+[size=4][b]Credits and KAVT permission condition[/b][/size]
+
+SBBF by FredKarrera. BCB and BCBPak by Sindae. Scantily Clad Camp Outfits by Crosscrusade. MCM by Volitio and contributors. BG3 Script Extender and Divine/LSLib by Norbyte.
+
+KAVT interoperability is credited to Kazstralities/Astralities/Kaz. No KAVT textures are bundled. The KAVT author permits asset use with credit and prohibits Donation Points when those assets are used; [b]Donation Points must remain disabled for this release[/b].
