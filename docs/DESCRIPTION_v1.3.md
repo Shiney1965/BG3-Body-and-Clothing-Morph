@@ -11,6 +11,23 @@ v1.3 fixes unintended SBBF/BCB body-tattoo bleedthrough and incorrect-atlas beha
 
 You can switch policies while playing. Both policies, including switching between them, passed the v1.3 gameplay smoke test in the tested KAVT NVP/non-VT setup. KAVT is optional; no KAVT tattoo textures are included.
 
+## Tattoo Function Tested with the Following Tattoo Mod List:
+
+The successful v1.3 gameplay test used the following relevant KAVT and tattoo entries, listed in the exact top-to-bottom order in which they appeared in the tested load order. Unrelated mods located between these entries are omitted:
+
+1. **UT/KAVT Universal Automatic Patcher**
+2. **KAVT NVP - KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender**
+3. **Rogue Tattoo**
+4. **KAZSTRA CC Body Tattoo Selector**
+5. **KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender - Customization Patch**
+6. **KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender - EotB Patch**
+7. **BhaalistTats**
+8. **More Makeup and Tattoos**
+9. **More Makeup and Tattoos - Unique Tav Patch**
+10. **More Makeup and Tattoos Icons**
+
+This records the configuration that was gameplay-tested; it is not a requirement to install every mod in this list. KAVT is optional, and no-KAVT and KAVT VT configurations were not independently gameplay-confirmed for v1.3.
+
 **Update — New in v1.3:** the tattoo fix and MCM policies above; **six gameplay-approved SCO garment corrections** (Scalemail Armor and Soul Vest families); **32 camp-clothing variants backed by 18 proper SBBF meshes**; an extended SCO tightening pass for both SBBF and BCB; and a simpler **three-PAK layout**. The required `ClothMorphRuntime.pak` now contains the body switcher, base-game garments, Githyanki support, and tattoo fix. The BCB add-on remains unchanged from v1.2.1.
 
 *Note: this mod adapts existing textures and meshes on garments and bodies — with permission where the items were previously modded. It contains no original garment textures or body meshes. Many thanks to the mod authors whose permissions made this possible; see Credits.*

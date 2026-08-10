@@ -57,6 +57,23 @@ The Main mod (`ClothMorphRuntime.pak`) is required by every add-on. It now inclu
 - Tiefling females (Karlach) are not yet supported. HUM_F + Githyanki only.
 - Items outside the covered sets pass through unchanged by design. Multiplayer is limited/experimental.
 
+## Tattoo Function Tested with the Following Tattoo Mod List:
+
+Relevant KAVT and tattoo entries in their exact top-to-bottom order in the tested load order (unrelated intervening mods omitted):
+
+1. **UT/KAVT Universal Automatic Patcher**
+2. **KAVT NVP - KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender**
+3. **Rogue Tattoo**
+4. **KAZSTRA CC Body Tattoo Selector**
+5. **KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender - Customization Patch**
+6. **KAZSTRA Virtual Tav x Tattoo, Makeup & Scar Extender - EotB Patch**
+7. **BhaalistTats**
+8. **More Makeup and Tattoos**
+9. **More Makeup and Tattoos - Unique Tav Patch**
+10. **More Makeup and Tattoos Icons**
+
+This is the gameplay-tested configuration, not a requirement to install every listed mod. KAVT is optional; no-KAVT and KAVT VT were not independently gameplay-confirmed for v1.3.
+
 ## Credits & permissions
 
 FREE, and must stay free. Donation Points must remain disabled for v1.3 because it ships KAVT compatibility definitions under the author's published terms. Credits: Sindae (BCB 2351), FredKarrera (SBBF 4864 + 5040), Volitio/AtilioA (MCM 9162), Norbyte (BG3SE), Crosscrusade (SCO 2617), and Kazstralities/Astralities/Kaz (KAVT 16325). See NEXUS_DESCRIPTION_v1.3.md for full credits and the unchanged prior AI-assistance disclosure.
