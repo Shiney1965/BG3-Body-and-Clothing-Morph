@@ -27,7 +27,7 @@ Source tag: v1.2.1 (7818dbc11cfc3658a1f9c8ffb6af3465e143f2c9)
 ## Allowed v1.3 documentation changes
 
 - Version and release date.
-- Tattoo bleedthrough fix placed first, with MCM instructions for **Match Vanilla** and **Hide on SBBF/BCB**, plus the exact gameplay-test boundary.
+- Body tattoo display fix placed first, with MCM instructions for **Match Vanilla** and **Hide on SBBF/BCB**, plus the exact gameplay-test boundary.
 - Three-PAK consolidation: Main Runtime now contains the body switcher, base-game garments, Githyanki support, and tattoo fix; retired Content/Githyanki PAK upgrade instructions.
 - Proper SBBF meshes for 32 camp-clothing variants backed by 18 meshes.
 - SCO tightening figures (2,187 to 122 across 33 comparable garments, 94.4%) and the six gameplay-approved Scalemail Armor/Soul Vest corrections.
