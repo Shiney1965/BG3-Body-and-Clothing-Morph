@@ -1,99 +1,27 @@
-# Changelog - Body and Clothing Morph for SBBF and BCB
+# Changelog — Body and Clothing Morph for SBBF and BCB
 
-## v1.3 - 2026-08-10
+## v1.3 — 2026-08-10
 
-## Tattoo correction
+**New**
+- **Tattoo correction:** adds the MCM setting **SBBF/BCB body tattoos** with **Match Vanilla** (default) and **Hide on SBBF/BCB**. Both policies and switching between them passed the release gameplay test in the tested KAVT NVP/non-VT setup. KAVT is optional; no KAVT tattoo textures are bundled.
+- **Consolidated Main Runtime:** `ClothMorphRuntime.pak` now includes the body switcher, base-game garments, Githyanki support, and tattoo fix. The separate `ClothMorphContent.pak` and `ClothMorphGithyanki.pak` are retired.
+- **Camp clothing:** adds proper SBBF meshes for 32 outfit variants backed by 18 meshes.
 
-- Adds the MCM setting **SBBF/BCB body tattoos**.
-- Adds **Match Vanilla** as the default and **Hide on SBBF/BCB** as the opt-out policy.
-- Corrects unintended tattoo bleedthrough and atlas behavior on supported naked HUM_F SBBF and BCB bodies in the gameplay-tested KAVT NVP/non-VT setup.
-- Preserves Vanilla behavior and the character's saved tattoo selection.
-- Adds read-only `!cm_tattootest` and `!cm_tattoodump` diagnostics.
+**Improved**
+- **SCO SBBF/BCB fits:** across 33 comparable garments, the recorded problem-vertex count decreased from 2,187 to 122 (94.4%), with no measured garment worsening.
+- **Six SCO corrections:** Scalemail Armor, Scalemail Armor Alt, Soul Vest, Soul Vest Alt, Soul Vest Type C, and Soul Vest Type D passed gameplay review.
+- **Githyanki true Vanilla:** extends the forced true-Vanilla body behavior to Githyanki.
 
-## Proven Wave 03 SCO corrections
+**Packaging / compatibility**
+- Distribution is now three PAKs: required Runtime, optional SCO, and optional BCB.
+- `ClothMorphBCB.pak` is unchanged from v1.2.1.
+- Upgraders must deactivate and remove the retired Content and Githyanki PAKs before installing v1.3.
+- Because v1.3 ships KAVT compatibility definitions under the author's published permission terms, Donation Points must remain disabled.
 
-Corrects visible BCB faceting in these six exact-family meshes:
-
-- `HUM_F_ARM_Scalemail_Armor`
-- `HUM_F_ARM_Scalemail_Armor_Alt`
-- `HUM_F_ARM_Soul_Vest`
-- `HUM_F_ARM_Soul_Vest_Alt`
-- `HUM_F_ARM_Soul_Vest_Type_C`
-- `HUM_F_ARM_Soul_Vest_Type_D`
-
-Alan's release review result was: "All those items look good."
-
-## Consolidation and garment improvements
-
-- Consolidates five PAKs into three by merging Runtime, base-game garment content, and Githyanki support into `ClothMorphRuntime.pak`.
-- Retires `ClothMorphContent.pak` and `ClothMorphGithyanki.pak`.
-- Extends true-Vanilla body behavior to Githyanki.
-- Adds proper SBBF meshes for 32 camp-clothing variants backed by 18 meshes.
-- Extends the SCO skin-inward pass over both SBBF and BCB cuts. Across 33 comparable garments, the recorded problem-vertex count decreases from 2,187 to 122, a 94.4% reduction, with no measured garment worsening.
-- Includes the v1.2.1 forced true-Vanilla behavior for the seven HUM_F-body races.
-
-## BCB add-on
-
-- No content changes. `ClothMorphBCB.pak` remains byte-identical to the verified prior binary.
-
-## Explicit exclusions
-
-- Wave 04 Runtime Wavemother/Viconia candidate: packaging-only, not gameplay-approved.
-- Wave 07 Bard proof: packaging-only, not gameplay-approved.
-- Wave 08 external optional add-on: packaging-only, not gameplay-approved.
-- Wave 09 Elegant Robe: packaging-only, not gameplay-approved.
-- Wave 14 descriptor deletion: routing passed, rendering failed.
-- Wave 16 Authority candidate: rejected; do not load.
-- Wave 19 Oathbreaker donor candidate: rejected after clipping.
-- Wave 20 Oathbreaker/SBBF alignment: unfinished, not gameplay-proven, and not included.
-
-## v1.3 - 2026-08-10
-
-## Tattoo correction
-
-- Adds the MCM setting **SBBF/BCB body tattoos**.
-- Adds **Match Vanilla** as the default and **Hide on SBBF/BCB** as the opt-out policy.
-- Corrects unintended tattoo bleedthrough and atlas behavior on supported naked HUM_F SBBF and BCB bodies in the gameplay-tested KAVT NVP/non-VT setup.
-- Preserves Vanilla behavior and the character's saved tattoo selection.
-- Adds read-only `!cm_tattootest` and `!cm_tattoodump` diagnostics.
-
-## Proven Wave 03 SCO corrections
-
-Corrects visible BCB faceting in these six exact-family meshes:
-
-- `HUM_F_ARM_Scalemail_Armor`
-- `HUM_F_ARM_Scalemail_Armor_Alt`
-- `HUM_F_ARM_Soul_Vest`
-- `HUM_F_ARM_Soul_Vest_Alt`
-- `HUM_F_ARM_Soul_Vest_Type_C`
-- `HUM_F_ARM_Soul_Vest_Type_D`
-
-Alan's release review result was: "All those items look good."
-
-## Consolidation and garment improvements
-
-- Consolidates five PAKs into three by merging Runtime, base-game garment content, and Githyanki support into `ClothMorphRuntime.pak`.
-- Retires `ClothMorphContent.pak` and `ClothMorphGithyanki.pak`.
-- Extends true-Vanilla body behavior to Githyanki.
-- Adds proper SBBF meshes for 32 camp-clothing variants backed by 18 meshes.
-- Extends the SCO skin-inward pass over both SBBF and BCB cuts. Across 33 comparable garments, the recorded problem-vertex count decreases from 2,187 to 122, a 94.4% reduction, with no measured garment worsening.
-- Includes the v1.2.1 forced true-Vanilla behavior for the seven HUM_F-body races.
-
-## BCB add-on
-
-- No content changes. `ClothMorphBCB.pak` remains byte-identical to the verified prior binary.
-
-## Explicit exclusions
-
-- Wave 04 Runtime Wavemother/Viconia candidate: packaging-only, not gameplay-approved.
-- Wave 07 Bard proof: packaging-only, not gameplay-approved.
-- Wave 08 external optional add-on: packaging-only, not gameplay-approved.
-- Wave 09 Elegant Robe: packaging-only, not gameplay-approved.
-- Wave 14 descriptor deletion: routing passed, rendering failed.
-- Wave 16 Authority candidate: rejected; do not load.
-- Wave 19 Oathbreaker donor candidate: rejected after clipping.
-- Wave 20 Oathbreaker/SBBF alignment: unfinished, not gameplay-proven, and not included.
-
+**Test boundary**
+- The tattoo gameplay pass covered KAVT NVP/non-VT. No-KAVT and KAVT VT have static test coverage but were not independently gameplay-confirmed for this release.
+- Sixteen unconvertible SCO garments still use SCO's original mesh and may clip on SBBF/BCB.
+- All other previously documented limitations remain unless specifically changed above.
 ## v1.2.1 — 2026-07-30 (hotfix)
 
 **Fixed**
