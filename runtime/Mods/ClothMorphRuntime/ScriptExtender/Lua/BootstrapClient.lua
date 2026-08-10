@@ -274,11 +274,12 @@ Ext.RegisterConsoleCommand("cm_visdump", function(_cmd, charArg)
     Log("==== end cm_visdump ====")
 end)
 
--- Optional MCM bridge: MCM's UI runs client-side; forward body_choice changes
--- to the server over the existing command channel (server dedupes vs its own
--- event subscription, so double delivery is harmless).
+-- Optional MCM bridge: MCM's UI runs client-side; forward body_choice over the
+-- existing target-aware command path. Global tattoo events are origin-free
+-- BG3-MCM broadcasts and are deliberately ignored in client context.
 McmGlue.InstallClient({ Log = Log, Warn = Warn,
-                        IsValid = Shared.IsValidBodyChoice, Forward = ForwardForTarget })
+                        IsValid = Shared.IsValidBodyChoice,
+                        Forward = ForwardForTarget })
 
 -- Server -> client feedback for hotkey/console body switches (v4.13). Keeps the
 -- MCM radio in sync and logs a line. Review M1: the server broadcasts, so in
@@ -317,7 +318,7 @@ Ext.Events.SessionLoaded:Subscribe(function()
     McmGlue.InstallKeybindings({ Log = Log, Warn = Warn, Forward = ForwardForTarget })
 end)
 
-Log("BootstrapClient v4.19 loaded. Commands (forward to server): "
+Log("BootstrapClient v4.21 loaded. Commands (forward to server): "
     .. "!cm_setbody !cm_cyclebody !cm_setclothed !cm_seterace !cm_erpass !cm_erstatus !cm_refresh "
     .. "!cm_applyccsv !cm_revert !cm_status !cm_checkbody ; "
     .. "!cm_findoverride !cm_visdump (local client scans). Hotkeys: bind in MCM (unbound by default).")

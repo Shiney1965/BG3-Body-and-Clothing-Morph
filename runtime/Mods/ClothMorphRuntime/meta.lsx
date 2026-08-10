@@ -18,23 +18,23 @@
                 <node id="ModuleInfo">
                     <attribute id="Author" type="LSString" value="SerpentineShel" />
                     <attribute id="CharacterCreationLevelName" type="FixedString" value="" />
-                    <attribute id="Description" type="LSString" value="Phase 1 runtime skeleton for Clothing Morph for Specialized Bodies. Lets a player pick, per character, a body type (vanilla / SBBF / BCB) and applies the chosen NUDE body via a CharacterCreationSharedVisual override that persists across save/load. Clothed-armor swap is stubbed for a later phase." />
+                    <attribute id="Description" type="LSString" value="Pick a female body shape per character - Vanilla, SBBF or BCB - and your equipped clothing and armor refits to match. The choice is stored per character in your savegame and persists across save/load. Covers human/elf/half-elf/drow females and Githyanki females (including Lae'zel). Change the shape from the MCM panel, the !cm_setbody console command, or optional hotkeys. Requires MCM 1.19+ and BG3 Script Extender; SBBF and BCB are optional target shapes, not requirements. Optional add-ons ClothMorphSCO and ClothMorphBCB extend coverage to those source mods' garments." />
                     <attribute id="Folder" type="LSString" value="ClothMorphRuntime" />
                     <attribute id="LobbyLevelName" type="FixedString" value="" />
                     <attribute id="MD5" type="LSString" value="" />
                     <attribute id="MainMenuBackgroundVideo" type="FixedString" value="" />
                     <attribute id="MenuLevelName" type="FixedString" value="" />
-                    <attribute id="Name" type="LSString" value="Clothing Morph Runtime" />
+                    <attribute id="Name" type="LSString" value="Body and Clothing Morph" />
                     <attribute id="NumPlayers" type="uint8" value="4" />
                     <attribute id="PhotoBooth" type="FixedString" value="" />
                     <attribute id="StartupLevelName" type="FixedString" value="" />
                     <attribute id="Tags" type="LSString" value="" />
                     <attribute id="Type" type="FixedString" value="Add-on" />
                     <attribute id="UUID" type="FixedString" value="20aca985-e3e9-41d7-bf8f-10f2a3c413e4" />
-                    <attribute id="Version64" type="int64" value="36028797018963983" />
+                    <attribute id="Version64" type="int64" value="36451009484029952" />
                     <children>
                         <node id="PublishVersion">
-                            <attribute id="Version64" type="int64" value="36028797018963983" />
+                            <attribute id="Version64" type="int64" value="36451009484029952" />
                         </node>
                         <node id="Scripts" />
                         <node id="TargetModes">

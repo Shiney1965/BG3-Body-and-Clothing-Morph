@@ -41,22 +41,31 @@ function M.ExtractUserId(user)
     return nil
 end
 
-local function defaultReservedUserId(char)
-    if Osi == nil or Osi.GetReservedUserID == nil then return nil end
-    local ok, value = pcall(function() return Osi.GetReservedUserID(char) end)
-    if ok and value ~= nil and tostring(value) ~= "" then return tostring(value) end
-    return nil
+function M.GetReservedUserId(char, deps)
+    deps = deps or {}
+    local getEntity = deps.getEntity
+    if getEntity == nil and Ext ~= nil and Ext.Entity ~= nil then
+        getEntity = function(guid) return Ext.Entity.Get(guid) end
+    end
+    if getEntity == nil then return nil, "entity-api-unavailable" end
+    local ok, entity = pcall(getEntity, char)
+    if not ok or entity == nil then return nil, "entity-unavailable" end
+    local reservation = read(entity, "UserReservedFor")
+    if reservation == nil then return nil, "reservation-unavailable" end
+    local userId = M.ExtractUserId(read(reservation, "UserID"))
+    if userId == nil then return nil, "reserved-user-unavailable" end
+    return userId, nil
 end
 
 function M.CanUserControl(user, char, deps)
     deps = deps or {}
     local userId = M.ExtractUserId(user)
     if userId == nil then return false, "missing-user" end
-    local reserved
+    local reserved, reservedWhy
     if deps.getReservedUserId then
-        reserved = deps.getReservedUserId(char)
+        reserved, reservedWhy = deps.getReservedUserId(char)
     else
-        reserved = defaultReservedUserId(char)
+        reserved, reservedWhy = M.GetReservedUserId(char, deps)
     end
     if reserved ~= nil and tostring(reserved) ~= "" then
         if tostring(reserved) == userId then return true end
@@ -67,7 +76,7 @@ function M.CanUserControl(user, char, deps)
         if ok == true then return true end
         if ok == false then return false, "same-user-failed" end
     end
-    return false, "ownership-unknown"
+    return false, reservedWhy or "ownership-unknown"
 end
 
 function M.ResolveTarget(payload, user, deps)

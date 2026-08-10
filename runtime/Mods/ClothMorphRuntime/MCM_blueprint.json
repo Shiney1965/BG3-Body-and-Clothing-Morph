@@ -27,6 +27,16 @@
                             "Type": "checkbox",
                             "Default": false,
                             "Description": "If enabled, the body shape above is re-applied to your controlled character every time a save finishes loading. Leave OFF to let each save keep its own per-character choices."
+                        },
+                        {
+                            "Id": "body_tattoo_policy",
+                            "Name": "SBBF/BCB body tattoos",
+                            "Type": "radio",
+                            "Default": "Match Vanilla",
+                            "Options": {
+                                "Choices": ["Match Vanilla", "Hide on SBBF/BCB"]
+                            },
+                            "Description": "Controls naked SBBF/BCB bodies for the supported HUM_F family. It leaves Vanilla and your saved tattoo choice untouched. Match Vanilla is the default."
                         }
                     ]
                 },

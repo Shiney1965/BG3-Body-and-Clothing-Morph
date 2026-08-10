@@ -9,12 +9,11 @@
 --
 -- Wiring (see BootstrapServer.lua / BootstrapClient.lua):
 --   * CLIENT: InstallClient{} subscribes to Ext.ModEvents.BG3MCM
---     ["MCM_Setting_Saved"] and FORWARDS body_choice over the existing
---     ClothMorphRuntime_Cmd net channel with the controlled character target.
---   * SERVER: InstallServer{} also subscribes defensively, but it does not
---     apply contextless MCM events unless a target can be resolved. The net
---     path remains authoritative because DispatchNetCmd validates the sending
---     user against the requested character.
+--     ["MCM_Setting_Saved"] and FORWARDS body_choice only. Tattoo events are
+--     origin-free broadcasts and are ignored in client context.
+--   * SERVER: InstallServer{} also subscribes defensively. Per-character body
+--     choices still require a resolved target; a global tattoo event must pass
+--     the injected host-authority guard before it reaches the shared setter.
 --   * ApplyOnLoad{} no longer falls back to the host character. It only applies
 --     if a caller supplies an explicit safe target resolver.
 --
@@ -26,6 +25,7 @@ local M = {}
 
 local SETTING_BODY  = "body_choice"
 local SETTING_APPLY = "apply_on_load"
+local SETTING_TATTOO = "body_tattoo_policy"
 local DEDUPE_MS     = 1500
 
 local last = { value = nil, t = 0 }
@@ -41,6 +41,12 @@ local function ToChoice(v)
     return tostring(v):lower()
 end
 
+local function ToTattooPolicy(v)
+    if v == "Match Vanilla" then return "match" end
+    if v == "Hide on SBBF/BCB" then return "hide" end
+    return nil
+end
+
 local function McmPresent()
     local ok, present = pcall(function()
         return Ext.ModEvents ~= nil and Ext.ModEvents.BG3MCM ~= nil
@@ -53,24 +59,41 @@ local function Subscribe(deps, tag)
     local ok, err = pcall(function()
         Ext.ModEvents.BG3MCM["MCM_Setting_Saved"]:Subscribe(function(payload)
             if not payload or payload.modUUID ~= ModuleUUID then return end
-            if payload.settingId ~= SETTING_BODY then return end
-            local choice = ToChoice(payload.value)
-            if not deps.IsValid(choice) then
-                deps.Warn(("MCM[%s]: ignoring invalid body_choice '%s'"):format(tag, tostring(payload.value)))
+            if payload.settingId == SETTING_BODY then
+                local choice = ToChoice(payload.value)
+                if not deps.IsValid(choice) then
+                    deps.Warn(("MCM[%s]: ignoring invalid body_choice '%s'"):format(tag, tostring(payload.value)))
+                    return
+                end
+                deps.ApplyBody(choice, payload)
                 return
             end
-            deps.Apply(choice, payload)
+            if payload.settingId == SETTING_TATTOO then
+                -- Client contexts deliberately omit this callback. BG3-MCM's
+                -- public saved payload has no originating user, so forwarding
+                -- here could launder a guest change through the host client.
+                if deps.ApplyTattooPolicy == nil then return end
+                local policy = ToTattooPolicy(payload.value)
+                if policy == nil then
+                    deps.Warn(("MCM[%s]: ignoring invalid body_tattoo_policy '%s'"):format(
+                        tag, tostring(payload.value)))
+                    return
+                end
+                deps.ApplyTattooPolicy(policy, payload)
+            end
         end)
     end)
     if ok then
-        deps.Log(("MCM[%s]: integration active (listening for %s)."):format(tag, SETTING_BODY))
+        deps.Log(("MCM[%s]: integration active (listening for %s and %s)."):format(
+            tag, SETTING_BODY, SETTING_TATTOO))
     else
         deps.Warn(("MCM[%s]: subscribe failed: %s"):format(tag, tostring(err)))
     end
 end
 
 -- SERVER ---------------------------------------------------------------
--- deps: { Log, Warn, IsValid, ResolveMcmTarget?, SetDesiredBody }
+-- deps: { Log, Warn, IsValid, ResolveMcmTarget?, SetDesiredBody,
+--         AuthorizeTattooPolicy, RestoreTattooPolicy, SetBodyTattooPolicy }
 function M.InstallServer(deps)
     if not McmPresent() then
         deps.Log("MCM not detected; MCM integration idle (mod fully usable via !cm_setbody).")
@@ -78,7 +101,7 @@ function M.InstallServer(deps)
     end
     Subscribe({
         Log = deps.Log, Warn = deps.Warn, IsValid = deps.IsValid,
-        Apply = function(choice, payload)   -- payload IS passed by Subscribe (2nd arg); was read as a nil global before (v4.13 fix m3/F6)
+        ApplyBody = function(choice, payload)   -- payload IS passed by Subscribe (2nd arg); was read as a nil global before (v4.13 fix m3/F6)
             local char = nil
             if deps.ResolveMcmTarget ~= nil then
                 char = deps.ResolveMcmTarget(payload)
@@ -92,6 +115,19 @@ function M.InstallServer(deps)
             deps.Log(("MCM(server): body_choice -> '%s' (%s)"):format(choice, tostring(char)))
             deps.SetDesiredBody(char, choice)
             last.value, last.t = choice, t
+        end,
+        ApplyTattooPolicy = function(policy)
+            local okAuth, authorized, why = pcall(deps.AuthorizeTattooPolicy)
+            if not okAuth or authorized ~= true then
+                deps.Warn(("MCM(server): rejected body_tattoo_policy (%s)"):format(
+                    okAuth and tostring(why) or ("authority-error:" .. tostring(authorized))))
+                local okRestore, restoreErr = pcall(deps.RestoreTattooPolicy)
+                if not okRestore then
+                    deps.Warn("MCM(server): tattoo policy radio restore failed: " .. tostring(restoreErr))
+                end
+                return
+            end
+            deps.SetBodyTattooPolicy(policy, "mcm-server")
         end,
     }, "S")
 end
@@ -125,7 +161,7 @@ function M.InstallClient(deps)
     end
     Subscribe({
         Log = deps.Log, Warn = deps.Warn, IsValid = deps.IsValid,
-        Apply = function(choice) deps.Forward("mcm_setbody", choice) end,
+        ApplyBody = function(choice) deps.Forward("mcm_setbody", choice) end,
     }, "C")
 end
 
